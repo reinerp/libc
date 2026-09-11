@@ -610,11 +610,10 @@ s! {
 }
 
 s_no_extra_traits! {
-    /// WARNING: The `PartialEq`, `Eq` and `Hash` implementations of this
-    /// type are unsound and will be removed in the future.
+    /// Flexible-array header. Trailing IV storage is not owned by this value,
+    /// so it does not implement `PartialEq`, `Eq`, or `Hash`.
     #[deprecated(
-        note = "this struct has unsafe trait implementations that will be \
-                removed in the future",
+        note = "use an explicitly sized representation for trailing IV storage",
         since = "0.2.80"
     )]
     pub struct af_alg_iv {
@@ -687,34 +686,6 @@ s_no_extra_traits! {
     struct siginfo_f {
         _siginfo_base: [c_int; 3],
         sifields: sifields,
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        #[allow(deprecated)]
-        impl af_alg_iv {
-            fn as_slice(&self) -> &[u8] {
-                unsafe { ::core::slice::from_raw_parts(self.iv.as_ptr(), self.ivlen as usize) }
-            }
-        }
-
-        #[allow(deprecated)]
-        impl PartialEq for af_alg_iv {
-            fn eq(&self, other: &af_alg_iv) -> bool {
-                *self.as_slice() == *other.as_slice()
-            }
-        }
-
-        #[allow(deprecated)]
-        impl Eq for af_alg_iv {}
-
-        #[allow(deprecated)]
-        impl hash::Hash for af_alg_iv {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                self.as_slice().hash(state);
-            }
-        }
     }
 }
 
@@ -3464,21 +3435,36 @@ cfg_if! {
     }
 }
 
+fn next_cmsg_addr(cmsg: usize, len: usize, control: usize, controllen: usize) -> Option<usize> {
+    let mask = size_of::<usize>() - 1;
+    let aligned = len.checked_add(mask)? & !mask;
+    let next = cmsg.checked_add(aligned)?;
+    let end = control.checked_add(controllen)?;
+    if next.checked_add(size_of::<cmsghdr>())? <= end {
+        Some(next)
+    } else {
+        None
+    }
+}
+
 f! {
     pub unsafe fn CMSG_NXTHDR(mhdr: *const msghdr, cmsg: *const cmsghdr) -> *mut cmsghdr {
-        let next = (cmsg as usize + super::CMSG_ALIGN((*cmsg).cmsg_len as usize)) as *mut cmsghdr;
-        let max = (*mhdr).msg_control as usize + (*mhdr).msg_controllen as usize;
-        if (next.offset(1)) as usize > max {
-            ptr::null_mut()
-        } else {
-            next.cast()
+        // Check the address bounds before constructing a pointer to the next header.
+        match next_cmsg_addr(
+            cmsg as usize,
+            (*cmsg).cmsg_len as usize,
+            (*mhdr).msg_control as usize,
+            (*mhdr).msg_controllen as usize,
+        ) {
+            Some(next) => next as *mut cmsghdr,
+            None => ptr::null_mut(),
         }
     }
 
     pub unsafe fn CPU_ALLOC_SIZE(count: c_int) -> size_t {
         let _dummy: cpu_set_t = mem::zeroed();
         let size_in_bits = 8 * size_of_val(&_dummy.__bits[0]);
-        ((count as size_t + size_in_bits - 1) / 8) as size_t
+        ((count as size_t + size_in_bits - 1) / size_in_bits) * (size_in_bits / 8)
     }
 
     pub unsafe fn CPU_ZERO(cpuset: &mut cpu_set_t) -> () {
@@ -4005,4 +3991,12 @@ impl siginfo_t {
     pub unsafe fn si_stime(&self) -> c_long {
         self.sifields().sigchld.si_stime
     }
+}
+
+#[test]
+fn cmsg_next_address_is_bounded() {
+    let n = size_of::<cmsghdr>();
+    assert_eq!(next_cmsg_addr(0, n, 0, n), None);
+    assert_eq!(next_cmsg_addr(0, n, 0, 2 * n), Some(n));
+    assert_eq!(next_cmsg_addr(0, usize::MAX, 0, n), None);
 }

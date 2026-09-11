@@ -74,7 +74,7 @@ s_no_extra_traits! {
     }
 }
 
-s! {
+s_no_extra_traits! {
     pub struct sigevent {
         pub sigev_notify: c_int,
         pub sigev_signo: c_int,
@@ -88,7 +88,9 @@ s! {
         pub si_code: c_int,
         pub si_value: sigval,
     }
+}
 
+s! {
     pub struct sigaction {
         pub sa_handler: Option<extern "C" fn(c_int)>,
         pub sa_mask: sigset_t,
@@ -116,4 +118,14 @@ extern "C" {
         info: *mut siginfo_t,
         timeout: *const timespec,
     ) -> c_int;
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn signal_struct_traits() {
+        fn check<T: Copy + core::fmt::Debug>() {}
+        check::<super::sigevent>();
+        check::<super::siginfo_t>();
+    }
 }

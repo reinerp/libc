@@ -4,6 +4,14 @@ use crate::prelude::*;
 pub type wchar_t = u32;
 pub type greg_t = i64;
 
+#[test]
+fn open_flags_match_kernel() {
+    assert_eq!(
+        (O_DIRECT, O_LARGEFILE, O_DIRECTORY, O_NOFOLLOW),
+        (0o40000, 0o100000, 0o200000, 0o400000)
+    );
+}
+
 s! {
     pub struct stat {
         pub st_dev: crate::dev_t,
@@ -59,10 +67,10 @@ s_no_extra_traits! {
     }
 }
 
-pub const O_DIRECT: c_int = 0x40000;
-pub const O_DIRECTORY: c_int = 0x200000;
-pub const O_NOFOLLOW: c_int = 0x400000;
-pub const O_LARGEFILE: c_int = 0x100000;
+pub const O_DIRECT: c_int = 0o40000;
+pub const O_DIRECTORY: c_int = 0o200000;
+pub const O_NOFOLLOW: c_int = 0o400000;
+pub const O_LARGEFILE: c_int = 0o100000;
 
 pub const SIGSTKSZ: size_t = 8192;
 pub const MINSIGSTKSZ: size_t = 2048;

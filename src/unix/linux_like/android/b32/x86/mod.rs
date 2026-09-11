@@ -3,6 +3,15 @@ use crate::prelude::*;
 pub type wchar_t = i32;
 pub type greg_t = i32;
 
+#[test]
+fn ucontext_fpstate_follows_sigmask() {
+    assert_eq!(
+        core::mem::offset_of!(ucontext_t, __fpregs_mem),
+        core::mem::offset_of!(ucontext_t, uc_sigmask__c_anonymous_union)
+            + core::mem::size_of::<__c_anonymous_uc_sigmask>()
+    );
+}
+
 s! {
     pub struct _libc_fpreg {
         pub significand: [u16; 4],
@@ -40,7 +49,6 @@ s! {
         pub uc_stack: crate::stack_t,
         pub uc_mcontext: mcontext_t,
         pub uc_sigmask__c_anonymous_union: __c_anonymous_uc_sigmask,
-        __padding_rt_sigset: Padding<u32>,
         __fpregs_mem: _libc_fpstate,
     }
 }

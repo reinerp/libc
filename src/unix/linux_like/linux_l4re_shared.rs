@@ -1477,7 +1477,7 @@ f! {
     pub unsafe fn CPU_ALLOC_SIZE(count: c_int) -> size_t {
         let _dummy: cpu_set_t = mem::zeroed();
         let size_in_bits = 8 * size_of_val(&_dummy.bits[0]);
-        ((count as size_t + size_in_bits - 1) / 8) as size_t
+        ((count as size_t + size_in_bits - 1) / size_in_bits) * (size_in_bits / 8)
     }
 
     pub unsafe fn CPU_ZERO(cpuset: &mut cpu_set_t) -> () {
@@ -1548,7 +1548,7 @@ f! {
     }
 
     pub unsafe fn ELF32_R_INFO(sym: Elf32_Word, t: Elf32_Word) -> Elf32_Word {
-        sym << (8 + t) & 0xff
+        (sym << 8) + (t & 0xff)
     }
 
     pub unsafe fn ELF64_R_SYM(val: Elf64_Xword) -> Elf64_Xword {
@@ -1560,7 +1560,7 @@ f! {
     }
 
     pub unsafe fn ELF64_R_INFO(sym: Elf64_Xword, t: Elf64_Xword) -> Elf64_Xword {
-        sym << (32 + t)
+        (sym << 32) + t
     }
 }
 

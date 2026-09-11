@@ -866,6 +866,7 @@ s! {
                 target_arch = "arm",
                 target_arch = "hexagon",
                 target_arch = "m68k",
+                target_arch = "csky",
                 target_arch = "powerpc",
                 target_arch = "sparc",
                 target_arch = "x86_64",
@@ -1043,11 +1044,10 @@ cfg_if! {
 }
 
 s_no_extra_traits! {
-    /// WARNING: The `PartialEq`, `Eq` and `Hash` implementations of this
-    /// type are unsound and will be removed in the future.
+    /// Flexible-array header. Trailing IV storage is not owned by this value,
+    /// so it does not implement `PartialEq`, `Eq`, or `Hash`.
     #[deprecated(
-        note = "this struct has unsafe trait implementations that will be \
-                removed in the future",
+        note = "use an explicitly sized representation for trailing IV storage",
         since = "0.2.80"
     )]
     pub struct af_alg_iv {
@@ -1126,34 +1126,6 @@ s_no_extra_traits! {
     pub union __c_anonymous_xsk_tx_metadata_union {
         pub request: xsk_tx_metadata_request,
         pub completion: xsk_tx_metadata_completion,
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        #[allow(deprecated)]
-        impl af_alg_iv {
-            fn as_slice(&self) -> &[u8] {
-                unsafe { ::core::slice::from_raw_parts(self.iv.as_ptr(), self.ivlen as usize) }
-            }
-        }
-
-        #[allow(deprecated)]
-        impl PartialEq for af_alg_iv {
-            fn eq(&self, other: &af_alg_iv) -> bool {
-                *self.as_slice() == *other.as_slice()
-            }
-        }
-
-        #[allow(deprecated)]
-        impl Eq for af_alg_iv {}
-
-        #[allow(deprecated)]
-        impl hash::Hash for af_alg_iv {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                self.as_slice().hash(state);
-            }
-        }
     }
 }
 
@@ -3428,7 +3400,7 @@ f! {
 
     #[cfg(target_env = "musl")]
     pub unsafe fn SUN_LEN(s: crate::sockaddr_un) -> usize {
-        2 * crate::strlen(s.sun_path.as_ptr())
+        2 + crate::strlen(s.sun_path.as_ptr())
     }
 }
 

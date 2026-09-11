@@ -3,10 +3,7 @@
 //! This covers *-apple-* triples currently
 
 use crate::prelude::*;
-use crate::{
-    cmsghdr,
-    off_t,
-};
+use crate::{cmsghdr, off_t};
 
 pub type wchar_t = i32;
 pub type clock_t = c_ulong;
@@ -1622,23 +1619,33 @@ s! {
         pub ifdm_max: c_int,
     }
 
+}
+
+s_no_extra_traits! {
     #[repr(packed(4))]
     pub struct ifkpi {
         pub ifk_module_id: c_uint,
         pub ifk_type: c_uint,
         pub ifk_data: __c_anonymous_ifk_data,
     }
+}
 
+
+s_no_extra_traits! {
     pub struct ifreq {
         pub ifr_name: [c_char; crate::IFNAMSIZ],
         pub ifr_ifru: __c_anonymous_ifr_ifru,
     }
+}
 
+
+s_no_extra_traits! {
     pub struct in6_ifreq {
         pub ifr_name: [c_char; crate::IFNAMSIZ],
         pub ifr_ifru: __c_anonymous_ifr_ifru6,
     }
 }
+
 
 s_no_extra_traits! {
     #[repr(packed(4))]
@@ -1771,73 +1778,10 @@ cfg_if! {
         }
         impl Eq for ifconf {}
 
-        impl PartialEq for __c_anonymous_ifk_data {
-            fn eq(&self, other: &__c_anonymous_ifk_data) -> bool {
-                unsafe { self.ifk_ptr == other.ifk_ptr && self.ifk_value == other.ifk_value }
-            }
-        }
 
-        impl Eq for __c_anonymous_ifk_data {}
-        impl hash::Hash for __c_anonymous_ifk_data {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.ifk_ptr.hash(state);
-                    self.ifk_value.hash(state);
-                }
-            }
-        }
 
-        impl PartialEq for __c_anonymous_ifr_ifru {
-            fn eq(&self, other: &__c_anonymous_ifr_ifru) -> bool {
-                unsafe {
-                    self.ifru_addr == other.ifru_addr
-                        && self.ifru_dstaddr == other.ifru_dstaddr
-                        && self.ifru_broadaddr == other.ifru_broadaddr
-                        && self.ifru_flags == other.ifru_flags
-                        && self.ifru_metrics == other.ifru_metrics
-                        && self.ifru_mtu == other.ifru_mtu
-                        && self.ifru_phys == other.ifru_phys
-                        && self.ifru_media == other.ifru_media
-                        && self.ifru_intval == other.ifru_intval
-                        && self.ifru_data == other.ifru_data
-                        && self.ifru_devmtu == other.ifru_devmtu
-                        && self.ifru_kpi == other.ifru_kpi
-                        && self.ifru_wake_flags == other.ifru_wake_flags
-                        && self.ifru_route_refcnt == other.ifru_route_refcnt
-                        && self
-                            .ifru_cap
-                            .iter()
-                            .zip(other.ifru_cap.iter())
-                            .all(|(a, b)| a == b)
-                        && self.ifru_functional_type == other.ifru_functional_type
-                }
-            }
-        }
 
-        impl Eq for __c_anonymous_ifr_ifru {}
 
-        impl hash::Hash for __c_anonymous_ifr_ifru {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.ifru_addr.hash(state);
-                    self.ifru_dstaddr.hash(state);
-                    self.ifru_broadaddr.hash(state);
-                    self.ifru_flags.hash(state);
-                    self.ifru_metrics.hash(state);
-                    self.ifru_mtu.hash(state);
-                    self.ifru_phys.hash(state);
-                    self.ifru_media.hash(state);
-                    self.ifru_intval.hash(state);
-                    self.ifru_data.hash(state);
-                    self.ifru_devmtu.hash(state);
-                    self.ifru_kpi.hash(state);
-                    self.ifru_wake_flags.hash(state);
-                    self.ifru_route_refcnt.hash(state);
-                    self.ifru_cap.hash(state);
-                    self.ifru_functional_type.hash(state);
-                }
-            }
-        }
 
         impl Eq for __c_anonymous_ifc_ifcu {}
 
@@ -1854,41 +1798,8 @@ cfg_if! {
             }
         }
 
-        impl PartialEq for __c_anonymous_ifr_ifru6 {
-            fn eq(&self, other: &__c_anonymous_ifr_ifru6) -> bool {
-                unsafe {
-                    self.ifru_addr == other.ifru_addr
-                        && self.ifru_dstaddr == other.ifru_dstaddr
-                        && self.ifru_flags == other.ifru_flags
-                        && self.ifru_flags6 == other.ifru_flags6
-                        && self.ifru_metrics == other.ifru_metrics
-                        && self.ifru_intval == other.ifru_intval
-                        && self.ifru_data == other.ifru_data
-                        && self
-                            .ifru_scope_id
-                            .iter()
-                            .zip(other.ifru_scope_id.iter())
-                            .all(|(a, b)| a == b)
-                }
-            }
-        }
 
-        impl Eq for __c_anonymous_ifr_ifru6 {}
 
-        impl hash::Hash for __c_anonymous_ifr_ifru6 {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.ifru_addr.hash(state);
-                    self.ifru_dstaddr.hash(state);
-                    self.ifru_flags.hash(state);
-                    self.ifru_flags6.hash(state);
-                    self.ifru_metrics.hash(state);
-                    self.ifru_intval.hash(state);
-                    self.ifru_data.hash(state);
-                    self.ifru_scope_id.hash(state);
-                }
-            }
-        }
     }
 }
 

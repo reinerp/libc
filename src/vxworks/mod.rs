@@ -320,8 +320,10 @@ s! {
         pub ss_size: size_t,
         pub ss_flags: c_int,
     }
+}
 
-    // signal.h
+s_no_extra_traits! {
+    // signal.h: the active sigval member cannot be inferred for safe traits.
     pub struct siginfo_t {
         pub si_signo: c_int,
         pub si_code: c_int,
@@ -332,7 +334,9 @@ s! {
         pub si_uid: crate::uid_t,
         pub si_pid: crate::pid_t,
     }
+}
 
+s! {
     // pthread.h (krnl)
     // b_pthread_mutexattr_t.h (usr)
     pub struct pthread_mutexattr_t {
@@ -656,18 +660,6 @@ cfg_if! {
                     };
                     h.hash(state)
                 }
-            }
-        }
-
-        impl PartialEq for sigval {
-            fn eq(&self, other: &sigval) -> bool {
-                unsafe { self.sival_ptr as usize == other.sival_ptr as usize }
-            }
-        }
-        impl Eq for sigval {}
-        impl hash::Hash for sigval {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe { (self.sival_ptr as usize).hash(state) };
             }
         }
     }
@@ -2440,7 +2432,7 @@ safe_f! {
 pub unsafe fn posix_memalign(memptr: *mut *mut c_void, align: size_t, size: size_t) -> c_int {
     // check to see if align is a power of 2 and if align is a multiple
     //  of sizeof(void *)
-    if (align & align - 1 != 0) || (align as usize % size_of::<size_t>() != 0) {
+    if !align.is_power_of_two() || (align % size_of::<size_t>() != 0) {
         return crate::EINVAL;
     }
 
@@ -2457,6 +2449,30 @@ pub unsafe fn posix_memalign(memptr: *mut *mut c_void, align: size_t, size: size
             *memptr = temp;
             0
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn signal_values_do_not_hash_inactive_fields() {
+        trait Ambiguous<A> {
+            fn check() {}
+        }
+        impl<T> Ambiguous<()> for T {}
+        impl<T: core::hash::Hash> Ambiguous<u8> for T {}
+        let _ = <super::sigval as Ambiguous<_>>::check;
+        let _ = <super::siginfo_t as Ambiguous<_>>::check;
+    }
+
+    #[test]
+    fn zero_alignment_is_invalid() {
+        let mut pointer = core::ptr::null_mut();
+        assert_eq!(
+            unsafe { super::posix_memalign(&mut pointer, 0, 1) },
+            super::EINVAL
+        );
+        assert!(pointer.is_null());
     }
 }
 

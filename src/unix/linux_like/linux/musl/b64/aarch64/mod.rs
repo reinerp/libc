@@ -1,6 +1,11 @@
 use crate::off_t;
 use crate::prelude::*;
 
+#[test]
+fn reserved_context_is_aligned() {
+    assert_eq!(core::mem::offset_of!(mcontext_t, __reserved), 288);
+}
+
 pub type wchar_t = u32;
 pub type nlink_t = u32;
 pub type blksize_t = c_int;
@@ -81,7 +86,7 @@ s! {
         pub sp: c_ulong,
         pub pc: c_ulong,
         pub pstate: c_ulong,
-        __reserved: Padding<[u64; 512]>,
+        __reserved: Padding<[u128; 256]>,
     }
 
     #[repr(align(8))]

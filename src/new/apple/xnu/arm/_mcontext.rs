@@ -5,6 +5,12 @@
 pub use crate::mach::machine::_structs::*;
 
 s! {
+    pub struct __darwin_mcontext32 {
+        pub __es: __darwin_arm_exception_state,
+        pub __ss: __darwin_arm_thread_state,
+        pub __fs: __darwin_arm_vfp_state,
+    }
+
     pub struct __darwin_mcontext64 {
         pub __es: __darwin_arm_exception_state64,
         pub __ss: __darwin_arm_thread_state64,
@@ -12,4 +18,7 @@ s! {
     }
 }
 
+#[cfg(target_arch = "aarch64")]
 pub type mcontext_t = *mut __darwin_mcontext64;
+#[cfg(target_arch = "arm")]
+pub type mcontext_t = *mut __darwin_mcontext32;
