@@ -32,6 +32,8 @@ s! {
         pub st_mtime_nsec: c_long,
         pub st_ctime: crate::time_t,
         pub st_ctime_nsec: c_long,
+        #[cfg(linux_time_bits64)]
+        __st_ctime_pad: Padding<c_long>,
         pub st_blksize: crate::blksize_t,
         pub st_blocks: crate::blkcnt_t,
         st_pad5: Padding<[c_long; 14]>,
@@ -54,6 +56,8 @@ s! {
         pub st_mtime_nsec: c_long,
         pub st_ctime: crate::time_t,
         pub st_ctime_nsec: c_long,
+        #[cfg(linux_time_bits64)]
+        __st_ctime_pad: Padding<c_long>,
         pub st_blksize: crate::blksize_t,
         st_pad3: Padding<c_long>,
         pub st_blocks: crate::blkcnt64_t,

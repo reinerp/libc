@@ -10,7 +10,7 @@ pub type fsblkcnt_t = c_ulong;
 pub type fsfilcnt_t = c_ulong;
 pub type fsword_t = c_long;
 pub type ino_t = c_ulong;
-pub type nlink_t = c_uint;
+pub type nlink_t = c_ulong;
 pub type off_t = c_long;
 // [uClibc docs] Note stat64 has the same shape as stat for x86-64.
 pub type stat64 = stat;
@@ -27,8 +27,7 @@ s! {
         pub gid: crate::gid_t,
         pub cuid: crate::uid_t,
         pub cgid: crate::gid_t,
-        pub mode: c_ushort, // read / write
-        __pad1: Padding<c_ushort>,
+        pub mode: c_uint, // read / write
         pub __seq: c_ushort,
         __pad2: Padding<c_ushort>,
         __unused1: Padding<c_ulong>,
@@ -172,18 +171,18 @@ s! {
     }
 
     pub struct statfs64 {
-        pub f_type: c_int,
-        pub f_bsize: c_int,
+        pub f_type: c_long,
+        pub f_bsize: c_long,
         pub f_blocks: crate::fsblkcnt64_t,
         pub f_bfree: crate::fsblkcnt64_t,
         pub f_bavail: crate::fsblkcnt64_t,
         pub f_files: crate::fsfilcnt64_t,
         pub f_ffree: crate::fsfilcnt64_t,
         pub f_fsid: crate::fsid_t,
-        pub f_namelen: c_int,
-        pub f_frsize: c_int,
-        pub f_flags: c_int,
-        pub f_spare: [c_int; 4],
+        pub f_namelen: c_long,
+        pub f_frsize: c_long,
+        pub f_flags: c_long,
+        pub f_spare: [c_long; 4],
     }
 
     pub struct statvfs64 {
@@ -196,7 +195,6 @@ s! {
         pub f_ffree: u64,
         pub f_favail: u64,
         pub f_fsid: c_ulong,
-        __f_unused: Padding<c_int>,
         pub f_flag: c_ulong,
         pub f_namemax: c_ulong,
         __f_spare: [c_int; 6],
@@ -221,11 +219,13 @@ s! {
         pub c_lflag: crate::tcflag_t,
         pub c_line: crate::cc_t,
         pub c_cc: [crate::cc_t; crate::NCCS],
+        pub c_ispeed: crate::speed_t,
+        pub c_ospeed: crate::speed_t,
     }
 
     pub struct sigset_t {
         // FIXME(ulibc)
-        __val: [c_ulong; 16],
+        __val: [c_ulong; 1],
     }
 
     pub struct sysinfo {
@@ -321,7 +321,7 @@ pub const ENODATA: c_int = 0x3d;
 pub const O_APPEND: c_int = 0o2000;
 pub const O_ACCMODE: c_int = 0o003;
 pub const O_CLOEXEC: c_int = 0x80000;
-pub const O_CREAT: c_int = 0100;
+pub const O_CREAT: c_int = 0o100;
 pub const O_DIRECTORY: c_int = 0o200000;
 pub const O_EXCL: c_int = 0o200;
 pub const O_NOFOLLOW: c_int = 0x20000;
