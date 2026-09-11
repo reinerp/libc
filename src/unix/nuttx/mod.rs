@@ -1,7 +1,10 @@
-///! Definitions for Apache NuttX RTOS.
-///!
-///! Following definitions are based on NuttX 13.0.0.
-///! See https://github.com/apache/nuttx/tree/releases/13.0 for more details.
+//! Definitions for Apache NuttX RTOS 13.0.0.
+//!
+//! These bindings assume `CONFIG_FS_LARGEFILE` and no `CONFIG_SMALL_MEMORY`.
+//! Native configuration can also change pthread and semaphore layouts; these
+//! bindings do not adapt to those options. Check compatibility with the native
+//! configuration before using them.
+//! See https://github.com/apache/nuttx/tree/nuttx-13.0.0 for the matching headers.
 use crate::prelude::*;
 use crate::{
     in6_addr,
@@ -17,7 +20,7 @@ pub type blkcnt_t = u64;
 pub type blksize_t = i16;
 pub type cc_t = u8;
 pub type clock_t = i64;
-pub type dev_t = i32;
+pub type dev_t = u32;
 pub type fsblkcnt_t = u64;
 pub type locale_t = *mut i8;
 pub type mode_t = u32;
@@ -59,7 +62,7 @@ s! {
         pub st_mtim: timespec,
         pub st_ctim: timespec,
         pub st_blksize: blksize_t,
-        pub st_blocks: i64,
+        pub st_blocks: blkcnt_t,
         __reserved: Padding<[usize; __DEFAULT_RESERVED_SIZE__]>,
     }
 
@@ -664,7 +667,7 @@ extern "C" {
         flags: i32,
         src_addr: *mut sockaddr,
         addrlen: *mut socklen_t,
-    ) -> i32;
+    ) -> ssize_t;
 
     pub fn pthread_create(
         thread: *mut pthread_t,
