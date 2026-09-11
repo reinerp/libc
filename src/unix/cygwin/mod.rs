@@ -447,7 +447,7 @@ s! {
     }
 
     pub struct utsname {
-        pub sysname: [c_char; 66],
+        pub sysname: [c_char; 65],
         pub nodename: [c_char; 65],
         pub release: [c_char; 65],
         pub version: [c_char; 65],
@@ -525,7 +525,7 @@ s_no_extra_traits! {
 
 impl siginfo_t {
     pub unsafe fn si_addr(&self) -> *mut c_void {
-        #[repr(C)]
+        #[repr(C, packed(4))]
         struct siginfo_si_addr {
             _si_signo: c_int,
             _si_code: c_int,
@@ -559,7 +559,7 @@ impl siginfo_t {
     }
 
     pub unsafe fn si_value(&self) -> sigval {
-        #[repr(C)]
+        #[repr(C, packed(4))]
         struct siginfo_si_value {
             _si_signo: c_int,
             _si_code: c_int,
@@ -1704,7 +1704,7 @@ f! {
     pub unsafe fn CPU_ALLOC_SIZE(count: c_int) -> size_t {
         let _dummy: cpu_set_t = cpu_set_t { bits: [0; 16] };
         let size_in_bits = 8 * size_of_val(&_dummy.bits[0]);
-        ((count as size_t + size_in_bits - 1) / 8) as size_t
+        ((count as size_t + size_in_bits - 1) / size_in_bits) * size_of_val(&_dummy.bits[0])
     }
 
     pub unsafe fn CPU_COUNT_S(size: usize, cpuset: &cpu_set_t) -> c_int {
@@ -1722,7 +1722,7 @@ f! {
 
     pub unsafe fn CPU_SET(cpu: usize, cpuset: &mut cpu_set_t) -> () {
         let size_in_bits = 8 * size_of_val(&cpuset.bits[0]);
-        if cpu < size_in_bits {
+        if cpu < size_in_bits * cpuset.bits.len() {
             let (idx, offset) = (cpu / size_in_bits, cpu % size_in_bits);
             cpuset.bits[idx] |= 1 << offset;
         }
@@ -1730,7 +1730,7 @@ f! {
 
     pub unsafe fn CPU_CLR(cpu: usize, cpuset: &mut cpu_set_t) -> () {
         let size_in_bits = 8 * size_of_val(&cpuset.bits[0]);
-        if cpu < size_in_bits {
+        if cpu < size_in_bits * cpuset.bits.len() {
             let (idx, offset) = (cpu / size_in_bits, cpu % size_in_bits);
             cpuset.bits[idx] &= !(1 << offset);
         }
@@ -1738,7 +1738,7 @@ f! {
 
     pub unsafe fn CPU_ISSET(cpu: usize, cpuset: &cpu_set_t) -> bool {
         let size_in_bits = 8 * size_of_val(&cpuset.bits[0]);
-        if cpu < size_in_bits {
+        if cpu < size_in_bits * cpuset.bits.len() {
             let (idx, offset) = (cpu / size_in_bits, cpu % size_in_bits);
             0 != (cpuset.bits[idx] & (1 << offset))
         } else {
