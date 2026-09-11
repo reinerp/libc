@@ -323,7 +323,7 @@ s! {
         pub sigev_value: crate::sigval,
         pub sigev_signo: c_int,
         pub sigev_notify: c_int,
-        pub sigev_notify_function: extern "C" fn(val: crate::sigval),
+        pub sigev_notify_function: Option<extern "C" fn(val: crate::sigval)>,
         pub sigev_notify_attributes: *mut pthread_attr_t,
     }
 
@@ -535,7 +535,9 @@ s! {
         pub sa_mask: sigset_t,
         pub sa_flags: c_int,
     }
+}
 
+s_no_extra_traits! {
     pub struct poll_ctl_ext {
         pub version: u8,
         pub command: u8,
@@ -544,37 +546,11 @@ s! {
         pub u: __poll_ctl_ext_u,
         reserved64: Padding<[u64; 6]>,
     }
-}
 
-s_no_extra_traits! {
     pub union __poll_ctl_ext_u {
         pub addr: *mut c_void,
         pub data32: u32,
         pub data: u64,
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        impl PartialEq for __poll_ctl_ext_u {
-            fn eq(&self, other: &__poll_ctl_ext_u) -> bool {
-                unsafe {
-                    self.addr == other.addr
-                        && self.data32 == other.data32
-                        && self.data == other.data
-                }
-            }
-        }
-        impl Eq for __poll_ctl_ext_u {}
-        impl hash::Hash for __poll_ctl_ext_u {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.addr.hash(state);
-                    self.data32.hash(state);
-                    self.data.hash(state);
-                }
-            }
-        }
     }
 }
 
