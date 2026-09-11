@@ -5,6 +5,67 @@
 use crate::prelude::*;
 
 s! {
+    pub struct __darwin_x86_thread_state32 {
+        pub __eax: u32,
+        pub __ebx: u32,
+        pub __ecx: u32,
+        pub __edx: u32,
+        pub __edi: u32,
+        pub __esi: u32,
+        pub __ebp: u32,
+        pub __esp: u32,
+        pub __ss: u32,
+        pub __eflags: u32,
+        pub __eip: u32,
+        pub __cs: u32,
+        pub __ds: u32,
+        pub __es: u32,
+        pub __fs: u32,
+        pub __gs: u32,
+    }
+
+    pub struct __darwin_x86_exception_state32 {
+        pub __trapno: u16,
+        pub __cpu: u16,
+        pub __err: u32,
+        pub __faultvaddr: u32,
+    }
+
+    pub struct __darwin_x86_float_state32 {
+        pub __fpu_reserved: [c_int; 2],
+        __fpu_fcw: c_short,
+        __fpu_fsw: c_short,
+        pub __fpu_ftw: u8,
+        pub __fpu_rsrv1: u8,
+        pub __fpu_fop: u16,
+        pub __fpu_ip: u32,
+        pub __fpu_cs: u16,
+        pub __fpu_rsrv2: u16,
+        pub __fpu_dp: u32,
+        pub __fpu_ds: u16,
+        pub __fpu_rsrv3: u16,
+        pub __fpu_mxcsr: u32,
+        pub __fpu_mxcsrmask: u32,
+        pub __fpu_stmm0: __darwin_mmst_reg,
+        pub __fpu_stmm1: __darwin_mmst_reg,
+        pub __fpu_stmm2: __darwin_mmst_reg,
+        pub __fpu_stmm3: __darwin_mmst_reg,
+        pub __fpu_stmm4: __darwin_mmst_reg,
+        pub __fpu_stmm5: __darwin_mmst_reg,
+        pub __fpu_stmm6: __darwin_mmst_reg,
+        pub __fpu_stmm7: __darwin_mmst_reg,
+        pub __fpu_xmm0: __darwin_xmm_reg,
+        pub __fpu_xmm1: __darwin_xmm_reg,
+        pub __fpu_xmm2: __darwin_xmm_reg,
+        pub __fpu_xmm3: __darwin_xmm_reg,
+        pub __fpu_xmm4: __darwin_xmm_reg,
+        pub __fpu_xmm5: __darwin_xmm_reg,
+        pub __fpu_xmm6: __darwin_xmm_reg,
+        pub __fpu_xmm7: __darwin_xmm_reg,
+        __fpu_rsrv4: [u8; 224],
+        pub __fpu_reserved1: c_int,
+    }
+
     pub struct __darwin_mmst_reg {
         pub __mmst_reg: [c_char; 10],
         pub __mmst_rsrv: [c_char; 6],

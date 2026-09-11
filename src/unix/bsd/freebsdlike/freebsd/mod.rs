@@ -1,8 +1,5 @@
 use crate::prelude::*;
-use crate::{
-    cmsghdr,
-    off_t,
-};
+use crate::{cmsghdr, off_t};
 
 pub type fflags_t = u32;
 
@@ -60,12 +57,13 @@ pub type eventfd_t = u64;
 
 #[derive(Debug)]
 #[cfg_attr(feature = "extra_traits", derive(Hash, PartialEq, Eq))]
-#[repr(u32)]
-pub enum devstat_support_flags {
-    DEVSTAT_ALL_SUPPORTED = 0x00,
-    DEVSTAT_NO_BLOCKSIZE = 0x01,
-    DEVSTAT_NO_ORDERED_TAGS = 0x02,
-    DEVSTAT_BS_UNAVAILABLE = 0x04,
+#[repr(transparent)]
+pub struct devstat_support_flags(pub u32);
+impl devstat_support_flags {
+    pub const DEVSTAT_ALL_SUPPORTED: Self = Self(0x00);
+    pub const DEVSTAT_NO_BLOCKSIZE: Self = Self(0x01);
+    pub const DEVSTAT_NO_ORDERED_TAGS: Self = Self(0x02);
+    pub const DEVSTAT_BS_UNAVAILABLE: Self = Self(0x04);
 }
 impl Copy for devstat_support_flags {}
 impl Clone for devstat_support_flags {
@@ -109,12 +107,13 @@ impl Clone for devstat_tag_type {
 
 #[derive(Debug)]
 #[cfg_attr(feature = "extra_traits", derive(Hash, PartialEq, Eq))]
-#[repr(u32)]
-pub enum devstat_match_flags {
-    DEVSTAT_MATCH_NONE = 0x00,
-    DEVSTAT_MATCH_TYPE = 0x01,
-    DEVSTAT_MATCH_IF = 0x02,
-    DEVSTAT_MATCH_PASS = 0x04,
+#[repr(transparent)]
+pub struct devstat_match_flags(pub u32);
+impl devstat_match_flags {
+    pub const DEVSTAT_MATCH_NONE: Self = Self(0x00);
+    pub const DEVSTAT_MATCH_TYPE: Self = Self(0x01);
+    pub const DEVSTAT_MATCH_IF: Self = Self(0x02);
+    pub const DEVSTAT_MATCH_PASS: Self = Self(0x04);
 }
 impl Copy for devstat_match_flags {}
 impl Clone for devstat_match_flags {
@@ -147,29 +146,30 @@ impl Clone for devstat_priority {
 
 #[derive(Debug)]
 #[cfg_attr(feature = "extra_traits", derive(Hash, PartialEq, Eq))]
-#[repr(u32)]
-pub enum devstat_type_flags {
-    DEVSTAT_TYPE_DIRECT = 0x000,
-    DEVSTAT_TYPE_SEQUENTIAL = 0x001,
-    DEVSTAT_TYPE_PRINTER = 0x002,
-    DEVSTAT_TYPE_PROCESSOR = 0x003,
-    DEVSTAT_TYPE_WORM = 0x004,
-    DEVSTAT_TYPE_CDROM = 0x005,
-    DEVSTAT_TYPE_SCANNER = 0x006,
-    DEVSTAT_TYPE_OPTICAL = 0x007,
-    DEVSTAT_TYPE_CHANGER = 0x008,
-    DEVSTAT_TYPE_COMM = 0x009,
-    DEVSTAT_TYPE_ASC0 = 0x00a,
-    DEVSTAT_TYPE_ASC1 = 0x00b,
-    DEVSTAT_TYPE_STORARRAY = 0x00c,
-    DEVSTAT_TYPE_ENCLOSURE = 0x00d,
-    DEVSTAT_TYPE_FLOPPY = 0x00e,
-    DEVSTAT_TYPE_MASK = 0x00f,
-    DEVSTAT_TYPE_IF_SCSI = 0x010,
-    DEVSTAT_TYPE_IF_IDE = 0x020,
-    DEVSTAT_TYPE_IF_OTHER = 0x030,
-    DEVSTAT_TYPE_IF_MASK = 0x0f0,
-    DEVSTAT_TYPE_PASS = 0x100,
+#[repr(transparent)]
+pub struct devstat_type_flags(pub u32);
+impl devstat_type_flags {
+    pub const DEVSTAT_TYPE_DIRECT: Self = Self(0x000);
+    pub const DEVSTAT_TYPE_SEQUENTIAL: Self = Self(0x001);
+    pub const DEVSTAT_TYPE_PRINTER: Self = Self(0x002);
+    pub const DEVSTAT_TYPE_PROCESSOR: Self = Self(0x003);
+    pub const DEVSTAT_TYPE_WORM: Self = Self(0x004);
+    pub const DEVSTAT_TYPE_CDROM: Self = Self(0x005);
+    pub const DEVSTAT_TYPE_SCANNER: Self = Self(0x006);
+    pub const DEVSTAT_TYPE_OPTICAL: Self = Self(0x007);
+    pub const DEVSTAT_TYPE_CHANGER: Self = Self(0x008);
+    pub const DEVSTAT_TYPE_COMM: Self = Self(0x009);
+    pub const DEVSTAT_TYPE_ASC0: Self = Self(0x00a);
+    pub const DEVSTAT_TYPE_ASC1: Self = Self(0x00b);
+    pub const DEVSTAT_TYPE_STORARRAY: Self = Self(0x00c);
+    pub const DEVSTAT_TYPE_ENCLOSURE: Self = Self(0x00d);
+    pub const DEVSTAT_TYPE_FLOPPY: Self = Self(0x00e);
+    pub const DEVSTAT_TYPE_MASK: Self = Self(0x00f);
+    pub const DEVSTAT_TYPE_IF_SCSI: Self = Self(0x010);
+    pub const DEVSTAT_TYPE_IF_IDE: Self = Self(0x020);
+    pub const DEVSTAT_TYPE_IF_OTHER: Self = Self(0x030);
+    pub const DEVSTAT_TYPE_IF_MASK: Self = Self(0x0f0);
+    pub const DEVSTAT_TYPE_PASS: Self = Self(0x100);
 }
 impl Copy for devstat_type_flags {}
 impl Clone for devstat_type_flags {
@@ -440,7 +440,7 @@ s! {
         pub time_low: u32,
         pub time_mid: u16,
         pub time_hi_and_version: u16,
-        clock_seq_hi_and_reserved: Padding<u8>,
+        clock_seq_hi_and_reserved: u8,
         pub clock_seq_low: u8,
         pub node: [u8; _UUID_NODE_LEN],
     }
@@ -666,6 +666,9 @@ s! {
         pub ifcr_buffer: *mut c_char,
     }
 
+}
+
+s_no_extra_traits! {
     pub struct if_msghdr {
         /// to skip over non-understood messages
         pub ifm_msglen: c_ushort,
@@ -683,7 +686,10 @@ s! {
         /// statistics and other data about if
         pub ifm_data: if_data,
     }
+}
 
+
+s_no_extra_traits! {
     pub struct if_msghdrl {
         /// to skip over non-understood messages
         pub ifm_msglen: c_ushort,
@@ -707,6 +713,9 @@ s! {
         /// statistics and other data about if
         pub ifm_data: if_data,
     }
+}
+
+s! {
 
     pub struct ifa_msghdr {
         /// to skip over non-understood messages
@@ -726,6 +735,9 @@ s! {
         pub ifam_metric: c_int,
     }
 
+}
+
+s_no_extra_traits! {
     pub struct ifa_msghdrl {
         /// to skip over non-understood messages
         pub ifam_msglen: c_ushort,
@@ -750,6 +762,9 @@ s! {
         /// statistics and other data about if or address
         pub ifam_data: if_data,
     }
+}
+
+s! {
 
     pub struct ifma_msghdr {
         /// to skip over non-understood messages
@@ -854,6 +869,9 @@ s! {
         pub ifrh_types: u32,
     }
 
+}
+
+s_no_extra_traits! {
     pub struct ifmibdata {
         /// name of interface
         pub ifmd_name: [c_char; crate::IFNAMSIZ as usize],
@@ -872,6 +890,9 @@ s! {
         /// generic information and statistics
         pub ifmd_data: if_data,
     }
+}
+
+s! {
 
     pub struct ifmib_iso_8802_3 {
         pub dot3StatsAlignmentErrors: u32,
@@ -1478,12 +1499,18 @@ s! {
         pub a_un: __c_anonymous_elf32_auxv_union,
     }
 
+}
+
+s_no_extra_traits! {
     pub struct ifreq {
         /// if name, e.g. "en0"
         pub ifr_name: [c_char; crate::IFNAMSIZ],
         pub ifr_ifru: __c_anonymous_ifr_ifru,
     }
+}
 
+
+s_no_extra_traits! {
     pub struct if_data {
         /// ethernet, tokenring, etc
         pub ifi_type: u8,
@@ -1536,6 +1563,9 @@ s! {
         /// time of last administrative change
         pub __ifi_lastchange: __c_anonymous_ifi_lastchange,
     }
+}
+
+s! {
 
     pub struct ifstat {
         /// if name, e.g. "en0"
@@ -1833,52 +1863,11 @@ cfg_if! {
         }
         impl Eq for __c_anonymous_elf32_auxv_union {}
         impl hash::Hash for __c_anonymous_elf32_auxv_union {
-            fn hash<H: hash::Hasher>(&self, _state: &mut H) {
-                unimplemented!("traits");
+            fn hash<H: hash::Hasher>(&self, state: &mut H) {
+                unsafe { self.a_val.hash(state) };
             }
         }
 
-        impl PartialEq for __c_anonymous_ifr_ifru {
-            fn eq(&self, other: &__c_anonymous_ifr_ifru) -> bool {
-                unsafe {
-                    self.ifru_addr == other.ifru_addr
-                        && self.ifru_dstaddr == other.ifru_dstaddr
-                        && self.ifru_broadaddr == other.ifru_broadaddr
-                        && self.ifru_buffer == other.ifru_buffer
-                        && self.ifru_flags == other.ifru_flags
-                        && self.ifru_index == other.ifru_index
-                        && self.ifru_jid == other.ifru_jid
-                        && self.ifru_metric == other.ifru_metric
-                        && self.ifru_mtu == other.ifru_mtu
-                        && self.ifru_phys == other.ifru_phys
-                        && self.ifru_media == other.ifru_media
-                        && self.ifru_data == other.ifru_data
-                        && self.ifru_cap == other.ifru_cap
-                        && self.ifru_fib == other.ifru_fib
-                        && self.ifru_vlan_pcp == other.ifru_vlan_pcp
-                }
-            }
-        }
-        impl Eq for __c_anonymous_ifr_ifru {}
-        impl hash::Hash for __c_anonymous_ifr_ifru {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe { self.ifru_addr.hash(state) };
-                unsafe { self.ifru_dstaddr.hash(state) };
-                unsafe { self.ifru_broadaddr.hash(state) };
-                unsafe { self.ifru_buffer.hash(state) };
-                unsafe { self.ifru_flags.hash(state) };
-                unsafe { self.ifru_index.hash(state) };
-                unsafe { self.ifru_jid.hash(state) };
-                unsafe { self.ifru_metric.hash(state) };
-                unsafe { self.ifru_mtu.hash(state) };
-                unsafe { self.ifru_phys.hash(state) };
-                unsafe { self.ifru_media.hash(state) };
-                unsafe { self.ifru_data.hash(state) };
-                unsafe { self.ifru_cap.hash(state) };
-                unsafe { self.ifru_fib.hash(state) };
-                unsafe { self.ifru_vlan_pcp.hash(state) };
-            }
-        }
 
         impl PartialEq for __c_anonymous_ifc_ifcu {
             fn eq(&self, other: &__c_anonymous_ifc_ifcu) -> bool {
@@ -1893,35 +1882,7 @@ cfg_if! {
             }
         }
 
-        impl PartialEq for __c_anonymous_ifi_epoch {
-            fn eq(&self, other: &__c_anonymous_ifi_epoch) -> bool {
-                unsafe { self.tt == other.tt && self.ph == other.ph }
-            }
-        }
-        impl Eq for __c_anonymous_ifi_epoch {}
-        impl hash::Hash for __c_anonymous_ifi_epoch {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.tt.hash(state);
-                    self.ph.hash(state);
-                }
-            }
-        }
 
-        impl PartialEq for __c_anonymous_ifi_lastchange {
-            fn eq(&self, other: &__c_anonymous_ifi_lastchange) -> bool {
-                unsafe { self.tv == other.tv && self.ph == other.ph }
-            }
-        }
-        impl Eq for __c_anonymous_ifi_lastchange {}
-        impl hash::Hash for __c_anonymous_ifi_lastchange {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.tv.hash(state);
-                    self.ph.hash(state);
-                }
-            }
-        }
     }
 }
 

@@ -22,7 +22,7 @@ extern "C" {
     // Available from Big Sur
     pub fn pthread_introspection_hook_install(
         hook: pthread_introspection_hook_t,
-    ) -> pthread_introspection_hook_t;
+    ) -> Option<pthread_introspection_hook_t>;
     pub fn pthread_introspection_setspecific_np(
         thread: pthread_t,
         key: pthread_key_t,

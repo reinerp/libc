@@ -25,7 +25,7 @@ cfg_if! {
     if #[cfg(feature = "extra_traits")] {
         impl PartialEq for __fpreg {
             fn eq(&self, other: &__fpreg) -> bool {
-                unsafe { self.u_u64 == other.u_u64 || self.u_d == other.u_d }
+                unsafe { self.u_u64 == other.u_u64 }
             }
         }
         impl Eq for __fpreg {}
