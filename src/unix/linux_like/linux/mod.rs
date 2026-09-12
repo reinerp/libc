@@ -3428,7 +3428,7 @@ f! {
 
     #[cfg(target_env = "musl")]
     pub unsafe fn SUN_LEN(s: crate::sockaddr_un) -> usize {
-        2 * crate::strlen(s.sun_path.as_ptr())
+        2 + crate::strlen(s.sun_path.as_ptr())
     }
 }
 

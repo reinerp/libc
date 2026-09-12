@@ -2440,7 +2440,7 @@ safe_f! {
 pub unsafe fn posix_memalign(memptr: *mut *mut c_void, align: size_t, size: size_t) -> c_int {
     // check to see if align is a power of 2 and if align is a multiple
     //  of sizeof(void *)
-    if (align & align - 1 != 0) || (align as usize % size_of::<size_t>() != 0) {
+    if !align.is_power_of_two() || (align as usize % size_of::<size_t>() != 0) {
         return crate::EINVAL;
     }
 

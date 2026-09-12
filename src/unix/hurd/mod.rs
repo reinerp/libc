@@ -282,6 +282,7 @@ s! {
         pub sun_path: [c_char; 108usize],
     }
 
+    #[cfg_attr(target_pointer_width = "64", repr(align(8)))]
     pub struct sockaddr_storage {
         pub ss_len: c_uchar,
         pub ss_family: sa_family_t,
@@ -3104,7 +3105,7 @@ pub const MSG_CTRUNC: c_int = 32;
 pub const MSG_WAITALL: c_int = 64;
 pub const MSG_DONTWAIT: c_int = 128;
 pub const MSG_NOSIGNAL: c_int = 1024;
-pub const MSG_CMSG_CLOEXEC: c_int = 0x40000000;
+pub const MSG_CMSG_CLOEXEC: c_int = 0x40000;
 
 pub const SCM_RIGHTS: c_int = 1;
 pub const SCM_TIMESTAMP: c_int = 2;

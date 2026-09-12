@@ -3478,7 +3478,7 @@ f! {
     pub unsafe fn CPU_ALLOC_SIZE(count: c_int) -> size_t {
         let _dummy: cpu_set_t = mem::zeroed();
         let size_in_bits = 8 * size_of_val(&_dummy.__bits[0]);
-        ((count as size_t + size_in_bits - 1) / 8) as size_t
+        ((count as size_t + size_in_bits - 1) / size_in_bits) * (size_in_bits / 8)
     }
 
     pub unsafe fn CPU_ZERO(cpuset: &mut cpu_set_t) -> () {
