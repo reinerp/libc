@@ -151,8 +151,9 @@ fn main() {
     // OpenHarmony uses a fork of the musl libc
     let musl = target_env == "musl" || target_env == "ohos";
 
-    // loongarch64, hexagon, ohos and pauthtest only exist with recent musl
+    // These targets only exist with recent musl (RISC-V32 starts at 1.2.5).
     if target_arch == "loongarch64"
+        || target_arch == "riscv32"
         || target_arch == "hexagon"
         || target_env == "ohos"
         || target_abi == "pauthtest"

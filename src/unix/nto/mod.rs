@@ -609,6 +609,10 @@ s! {
         pub dlpi_phnum: crate::Elf64_Half,
     }
 
+}
+
+s_no_extra_traits! {
+    #[cfg_attr(all(feature = "extra_traits", not(target_arch = "x86_64")), derive(PartialEq, Eq, Hash))]
     #[repr(align(8))]
     pub struct ucontext_t {
         pub uc_link: *mut ucontext_t,
@@ -616,6 +620,9 @@ s! {
         pub uc_stack: stack_t,
         pub uc_mcontext: mcontext_t,
     }
+}
+
+s! {
     pub struct sockaddr_un {
         pub sun_len: u8,
         pub sun_family: sa_family_t,

@@ -282,6 +282,7 @@ s! {
         pub sun_path: [c_char; 108usize],
     }
 
+    #[cfg_attr(target_pointer_width = "64", repr(align(8)))]
     pub struct sockaddr_storage {
         pub ss_len: c_uchar,
         pub ss_family: sa_family_t,
@@ -3104,7 +3105,7 @@ pub const MSG_CTRUNC: c_int = 32;
 pub const MSG_WAITALL: c_int = 64;
 pub const MSG_DONTWAIT: c_int = 128;
 pub const MSG_NOSIGNAL: c_int = 1024;
-pub const MSG_CMSG_CLOEXEC: c_int = 0x40000000;
+pub const MSG_CMSG_CLOEXEC: c_int = 0x40000;
 
 pub const SCM_RIGHTS: c_int = 1;
 pub const SCM_TIMESTAMP: c_int = 2;
@@ -3377,6 +3378,21 @@ const fn CMSG_ALIGN(len: usize) -> usize {
     (len + size_of::<usize>() - 1) & !(size_of::<usize>() - 1)
 }
 
+fn next_cmsg_addr(cmsg: usize, len: usize, control: usize, controllen: usize) -> Option<usize> {
+    if len < size_of::<cmsghdr>() || cmsg < control {
+        return None;
+    }
+    let mask = size_of::<usize>() - 1;
+    let aligned = len.checked_add(mask)? & !mask;
+    let next = cmsg.checked_add(aligned)?;
+    let end = control.checked_add(controllen)?;
+    if next.checked_add(size_of::<cmsghdr>())? <= end {
+        Some(next)
+    } else {
+        None
+    }
+}
+
 // functions
 f! {
     pub unsafe fn CMSG_FIRSTHDR(mhdr: *const msghdr) -> *mut cmsghdr {
@@ -3400,17 +3416,13 @@ f! {
     }
 
     pub unsafe fn CMSG_NXTHDR(mhdr: *const msghdr, cmsg: *const cmsghdr) -> *mut cmsghdr {
-        if ((*cmsg).cmsg_len as usize) < size_of::<cmsghdr>() {
-            return ptr::null_mut();
-        }
-        let next = (cmsg as usize + CMSG_ALIGN((*cmsg).cmsg_len as usize)) as *mut cmsghdr;
-        let max = (*mhdr).msg_control as usize + (*mhdr).msg_controllen as usize;
-        if (next.offset(1)) as usize > max
-            || next as usize + CMSG_ALIGN((*next).cmsg_len as usize) > max
-        {
-            ptr::null_mut()
-        } else {
-            next.cast()
+        // The next header may be under construction: check bounds, not its contents.
+        match next_cmsg_addr(
+            cmsg as usize, (*cmsg).cmsg_len as usize,
+            (*mhdr).msg_control as usize, (*mhdr).msg_controllen as usize,
+        ) {
+            Some(next) => next as *mut cmsghdr,
+            None => ptr::null_mut(),
         }
     }
 

@@ -69,6 +69,9 @@ s! {
         pub addr: c_ulong,
     }
 
+}
+
+s_no_extra_traits! {
     pub struct fpregset_t {
         pub fpc: c_uint,
         pub fprs: [fpreg_t; 16],
@@ -94,24 +97,6 @@ s_no_extra_traits! {
     pub union fpreg_t {
         pub d: c_double,
         pub f: c_float,
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        impl PartialEq for fpreg_t {
-            fn eq(&self, _other: &fpreg_t) -> bool {
-                unimplemented!("traits")
-            }
-        }
-
-        impl Eq for fpreg_t {}
-
-        impl hash::Hash for fpreg_t {
-            fn hash<H: hash::Hasher>(&self, _state: &mut H) {
-                unimplemented!("traits")
-            }
-        }
     }
 }
 

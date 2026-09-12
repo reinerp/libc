@@ -3,6 +3,12 @@
 use crate::off_t;
 use crate::prelude::*;
 
+#[test]
+fn ipc_field_widths_match_headers() {
+    let _: fn(&ipc_perm) -> crate::mode_t = |value| value.mode;
+    let _: fn(&ipc_perm) -> c_int = |value| value.__seq;
+}
+
 pub type wchar_t = c_int;
 
 pub type nlink_t = c_uint;
@@ -39,10 +45,8 @@ s! {
         pub gid: crate::gid_t,
         pub cuid: crate::uid_t,
         pub cgid: crate::gid_t,
-        pub mode: c_ushort,
-        __pad1: Padding<c_ushort>,
-        pub __seq: c_ushort,
-        __pad2: Padding<c_ushort>,
+        pub mode: crate::mode_t,
+        pub __seq: c_int,
         __unused1: Padding<c_ulong>,
         __unused2: Padding<c_ulong>,
     }

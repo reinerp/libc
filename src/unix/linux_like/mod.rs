@@ -1238,7 +1238,8 @@ cfg_if! {
     if #[cfg(not(any(
         target_arch = "mips",
         target_arch = "mips32r6",
-        target_arch = "mips64"
+        target_arch = "mips64",
+        target_arch = "mips64r6"
     )))] {
         pub const SI_TIMER: c_int = -2;
         pub const SI_MESGQ: c_int = -3;
@@ -1683,7 +1684,10 @@ cfg_if! {
             if #[cfg(any(
                 any(target_arch = "powerpc", target_arch = "powerpc64"),
                 any(target_arch = "sparc", target_arch = "sparc64"),
-                any(target_arch = "mips", target_arch = "mips64"),
+                any(
+                    target_arch = "mips", target_arch = "mips64",
+                    target_arch = "mips32r6", target_arch = "mips64r6"
+                ),
             ))] {
                 // https://github.com/torvalds/linux/blob/b311c1b497e51a628aa89e7cb954481e5f9dced2/arch/powerpc/include/uapi/asm/ioctl.h
                 // https://github.com/torvalds/linux/blob/b311c1b497e51a628aa89e7cb954481e5f9dced2/arch/sparc/include/uapi/asm/ioctl.h

@@ -1,10 +1,28 @@
 use crate::prelude::*;
-use crate::{
-    off64_t,
-    off_t,
-};
+
+#[cfg(all(test, gnu_time_bits64))]
+#[test]
+fn time64_records_match_headers() {
+    assert_eq!(
+        core::mem::offset_of!(shmid_ds, shm_dtime) - core::mem::offset_of!(shmid_ds, shm_atime),
+        8
+    );
+    assert_eq!(
+        core::mem::offset_of!(msqid_ds, msg_rtime) - core::mem::offset_of!(msqid_ds, msg_stime),
+        8
+    );
+    assert_eq!(
+        core::mem::offset_of!(stat64, st_ino),
+        core::mem::offset_of!(crate::stat, st_ino)
+    );
+}
+
+use crate::{off64_t, off_t};
 
 pub type wchar_t = u32;
+
+#[cfg(gnu_time_bits64)]
+pub type stat64 = crate::stat;
 
 s! {
     // FIXME(1.0): This should not implement `PartialEq`
@@ -62,6 +80,7 @@ s! {
         __unused2: Padding<c_ulong>,
     }
 
+    #[cfg(not(gnu_time_bits64))]
     pub struct stat64 {
         pub st_dev: crate::dev_t,
         __pad1: Padding<c_uint>,
@@ -119,10 +138,13 @@ s! {
         pub shm_perm: crate::ipc_perm,
         pub shm_segsz: size_t,
         pub shm_atime: crate::time_t,
+        #[cfg(not(gnu_time_bits64))]
         __unused1: Padding<c_ulong>,
         pub shm_dtime: crate::time_t,
+        #[cfg(not(gnu_time_bits64))]
         __unused2: Padding<c_ulong>,
         pub shm_ctime: crate::time_t,
+        #[cfg(not(gnu_time_bits64))]
         __unused3: Padding<c_ulong>,
         pub shm_cpid: crate::pid_t,
         pub shm_lpid: crate::pid_t,
@@ -134,10 +156,13 @@ s! {
     pub struct msqid_ds {
         pub msg_perm: crate::ipc_perm,
         pub msg_stime: crate::time_t,
+        #[cfg(not(gnu_time_bits64))]
         __glibc_reserved1: Padding<c_ulong>,
         pub msg_rtime: crate::time_t,
+        #[cfg(not(gnu_time_bits64))]
         __glibc_reserved2: Padding<c_ulong>,
         pub msg_ctime: crate::time_t,
+        #[cfg(not(gnu_time_bits64))]
         __glibc_reserved3: Padding<c_ulong>,
         pub __msg_cbytes: c_ulong,
         pub msg_qnum: crate::msgqnum_t,

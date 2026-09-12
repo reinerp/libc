@@ -3027,12 +3027,12 @@ f! {
     }
 
     pub unsafe fn CMSG_NXTHDR(mhdr: *const msghdr, cmsg: *const cmsghdr) -> *mut cmsghdr {
-        if ((*cmsg).cmsg_len as size_t) < size_of::<cmsghdr>() {
-            ptr::null_mut()
-        } else if __CMSG_NEXT(cmsg).add(size_of::<cmsghdr>()) >= __MHDR_END(mhdr) {
-            ptr::null_mut()
-        } else {
-            __CMSG_NEXT(cmsg).cast()
+        match next_cmsg_addr(
+            cmsg as usize, (*cmsg).cmsg_len as usize,
+            (*mhdr).msg_control as usize, (*mhdr).msg_controllen as usize,
+        ) {
+            Some(next) => next as *mut cmsghdr,
+            None => ptr::null_mut(),
         }
     }
 
@@ -3120,17 +3120,19 @@ safe_f! {
     }
 }
 
-fn __CMSG_LEN(cmsg: *const cmsghdr) -> ssize_t {
-    ((unsafe { (*cmsg).cmsg_len as size_t } + size_of::<c_long>() - 1) & !(size_of::<c_long>() - 1))
-        as ssize_t
-}
-
-fn __CMSG_NEXT(cmsg: *const cmsghdr) -> *mut c_uchar {
-    (unsafe { cmsg.offset(__CMSG_LEN(cmsg)) }) as *mut c_uchar
-}
-
-fn __MHDR_END(mhdr: *const msghdr) -> *mut c_uchar {
-    unsafe { (*mhdr).msg_control.offset((*mhdr).msg_controllen as isize) }.cast()
+fn next_cmsg_addr(cmsg: usize, len: usize, control: usize, controllen: usize) -> Option<usize> {
+    if len < size_of::<cmsghdr>() || cmsg < control {
+        return None;
+    }
+    let mask = size_of::<usize>() - 1;
+    let aligned = len.checked_add(mask)? & !mask;
+    let next = cmsg.checked_add(aligned)?;
+    let end = control.checked_add(controllen)?;
+    if next.checked_add(size_of::<cmsghdr>())? <= end {
+        Some(next)
+    } else {
+        None
+    }
 }
 
 // EXTERN_FN

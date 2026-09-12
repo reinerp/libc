@@ -54,10 +54,8 @@ s! {
         pub gid: crate::gid_t,
         pub cuid: crate::uid_t,
         pub cgid: crate::gid_t,
-        pub mode: c_ushort,
-        __pad1: Padding<c_ushort>,
-        pub __seq: c_ushort,
-        __pad2: Padding<c_ushort>,
+        pub mode: crate::mode_t,
+        pub __seq: c_int,
         __unused1: Padding<c_ulong>,
         __unused2: Padding<c_ulong>,
     }
@@ -65,24 +63,21 @@ s! {
     pub struct shmid_ds {
         pub shm_perm: crate::ipc_perm,
         pub shm_segsz: size_t,
-        pub shm_atime: crate::time_t,
-        pub shm_dtime: crate::time_t,
-        pub shm_ctime: crate::time_t,
+        __shm_times: Padding<[c_ulong; 6]>,
         pub shm_cpid: crate::pid_t,
         pub shm_lpid: crate::pid_t,
         pub shm_nattch: crate::shmatt_t,
         __unused5: Padding<c_ulong>,
         __unused6: Padding<c_ulong>,
+        __unused7: Padding<c_ulong>,
+        pub shm_atime: crate::time_t,
+        pub shm_dtime: crate::time_t,
+        pub shm_ctime: crate::time_t,
     }
 
     pub struct msqid_ds {
         pub msg_perm: crate::ipc_perm,
-        pub msg_stime: crate::time_t,
-        __unused1: Padding<c_int>,
-        pub msg_rtime: crate::time_t,
-        __unused2: Padding<c_int>,
-        pub msg_ctime: crate::time_t,
-        __unused3: Padding<c_int>,
+        __msg_times: Padding<[c_ulong; 6]>,
         pub __msg_cbytes: c_ulong,
         pub msg_qnum: crate::msgqnum_t,
         pub msg_qbytes: crate::msglen_t,
@@ -90,13 +85,16 @@ s! {
         pub msg_lrpid: crate::pid_t,
         __pad1: Padding<c_ulong>,
         __pad2: Padding<c_ulong>,
+        pub msg_stime: crate::time_t,
+        pub msg_rtime: crate::time_t,
+        pub msg_ctime: crate::time_t,
     }
 }
 
 s_no_extra_traits! {
-    #[repr(align(8))]
+    #[repr(align(16))]
     pub struct max_align_t {
-        priv_: (i64, f64),
+        priv_: [i64; 4],
     }
 }
 

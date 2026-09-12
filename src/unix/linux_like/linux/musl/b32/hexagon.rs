@@ -69,17 +69,16 @@ s! {
     pub struct shmid_ds {
         pub shm_perm: crate::ipc_perm,
         pub shm_segsz: size_t,
-        pub shm_atime: crate::time_t,
-        __unused1: Padding<c_int>,
-        pub shm_dtime: crate::time_t,
-        __unused2: Padding<c_int>,
-        pub shm_ctime: crate::time_t,
-        __unused3: Padding<c_int>,
+        __shm_times32: Padding<[c_ulong; 6]>,
         pub shm_cpid: crate::pid_t,
         pub shm_lpid: crate::pid_t,
         pub shm_nattch: c_ulong,
         __pad1: Padding<c_ulong>,
         __pad2: Padding<c_ulong>,
+        __pad3: Padding<c_ulong>,
+        pub shm_atime: crate::time_t,
+        pub shm_dtime: crate::time_t,
+        pub shm_ctime: crate::time_t,
     }
 
     pub struct msqid_ds {

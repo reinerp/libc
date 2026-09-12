@@ -2,6 +2,25 @@
 
 use crate::prelude::*;
 
+#[cfg(all(
+    test,
+    gnu_time_bits64,
+    not(any(
+        target_arch = "mips",
+        target_arch = "mips32r6",
+        target_arch = "powerpc",
+        target_arch = "sparc"
+    ))
+))]
+#[test]
+fn time64_nanoseconds_follow_endianness() {
+    let expected = if cfg!(target_endian = "big") { 12 } else { 8 };
+    assert_eq!(
+        core::mem::offset_of!(stat, st_atime_nsec) - core::mem::offset_of!(stat, st_atime),
+        expected
+    );
+}
+
 pub type clock_t = i32;
 
 pub type shmatt_t = c_ulong;
@@ -26,7 +45,7 @@ cfg_if! {
         pub type fsblkcnt_t = u64;
         pub type fsfilcnt_t = u64;
         pub type rlim_t = u64;
-        pub type blksize_t = i64;
+        pub type blksize_t = i32;
     } else if #[cfg(gnu_time_bits64)] {
         pub type time_t = i64;
         pub type suseconds_t = i32;
@@ -70,6 +89,7 @@ cfg_if! {
     if #[cfg(not(any(
         target_arch = "mips",
         target_arch = "mips32r6",
+        target_arch = "riscv32",
         target_arch = "powerpc",
         target_arch = "sparc"
     )))] {
@@ -101,16 +121,22 @@ cfg_if! {
                 pub st_blocks: crate::blkcnt_t,
 
                 pub st_atime: crate::time_t,
+                #[cfg(all(gnu_time_bits64, target_endian = "big"))]
+                _atime_pad: Padding<c_int>,
                 pub st_atime_nsec: c_long,
-                #[cfg(gnu_time_bits64)]
+                #[cfg(all(gnu_time_bits64, target_endian = "little"))]
                 _atime_pad: Padding<c_int>,
                 pub st_mtime: crate::time_t,
+                #[cfg(all(gnu_time_bits64, target_endian = "big"))]
+                _mtime_pad: Padding<c_int>,
                 pub st_mtime_nsec: c_long,
-                #[cfg(gnu_time_bits64)]
+                #[cfg(all(gnu_time_bits64, target_endian = "little"))]
                 _mtime_pad: Padding<c_int>,
                 pub st_ctime: crate::time_t,
+                #[cfg(all(gnu_time_bits64, target_endian = "big"))]
+                _ctime_pad: Padding<c_int>,
                 pub st_ctime_nsec: c_long,
-                #[cfg(gnu_time_bits64)]
+                #[cfg(all(gnu_time_bits64, target_endian = "little"))]
                 _ctime_pad: Padding<c_int>,
 
                 #[cfg(not(gnu_file_offset_bits64))]
@@ -142,7 +168,10 @@ s! {
     }
 
     pub struct pthread_attr_t {
+        #[cfg(not(target_arch = "riscv32"))]
         __size: [u32; 9],
+        #[cfg(target_arch = "riscv32")]
+        __size: [u32; 8],
     }
 
     pub struct sigset_t {
@@ -177,6 +206,7 @@ s! {
         pub sem_otime: crate::time_t,
         #[cfg(not(any(
             gnu_time_bits64,
+            target_arch = "riscv32",
             target_arch = "mips",
             target_arch = "mips32r6",
             target_arch = "powerpc"
@@ -187,6 +217,7 @@ s! {
         pub sem_ctime: crate::time_t,
         #[cfg(not(any(
             gnu_time_bits64,
+            target_arch = "riscv32",
             target_arch = "mips",
             target_arch = "mips32r6",
             target_arch = "powerpc"

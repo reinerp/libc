@@ -5,7 +5,7 @@ use crate::prelude::*;
 pub const fn __PTHREAD_MUTEX_INITIALIZER(__kind: c_int) -> crate::pthread_mutex_t {
     // We don't need the whole complicated `__pthread_mutex_s` definition, just use the
     // offset of the `__kind` field.
-    let kind_offset = if cfg!(target_pointer_width = "64") {
+    let kind_offset = if cfg!(target_arch = "x86_64") {
         4 * size_of::<c_int>()
     } else {
         3 * size_of::<c_int>()
@@ -16,4 +16,12 @@ pub const fn __PTHREAD_MUTEX_INITIALIZER(__kind: c_int) -> crate::pthread_mutex_
     let repl = u8_slice_cast_char_slice(&kind_bytes);
     let size = replace_array_items(size, repl, kind_offset);
     crate::pthread_mutex_t { size }
+}
+
+#[cfg(all(test, target_arch = "x86_64"))]
+#[test]
+fn mutex_kind_offset() {
+    let mutex = __PTHREAD_MUTEX_INITIALIZER(1);
+    assert_eq!(&mutex.size[16..20], &[1, 0, 0, 0]);
+    assert_eq!(&mutex.size[12..16], &[0; 4]);
 }

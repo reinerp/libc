@@ -629,10 +629,16 @@ s! {
         pub data: *mut c_void,
     }
 
+}
+
+s_no_extra_traits! {
     pub struct ifreq {
         pub ifr_name: [c_char; crate::IFNAMSIZ],
         pub ifr_ifru: __c_anonymous_ifr_ifru,
     }
+}
+
+s! {
 
     pub struct tcp_info {
         pub tcpi_state: u8,
@@ -718,6 +724,8 @@ s! {
         pub si_signo: c_int,
         pub si_code: c_int,
         pub si_errno: c_int,
+        // The C payload union also contains clock_t, including on 32-bit targets.
+        __align: [crate::clock_t; 0],
         pub si_addr: *mut c_char,
         #[cfg(target_pointer_width = "32")]
         __pad: Padding<[u8; 112]>,
@@ -738,6 +746,9 @@ s! {
         pub ut_time: crate::time_t,
     }
 
+}
+
+s_no_extra_traits! {
     pub struct statfs {
         pub f_flags: u32,
         pub f_bsize: u32,
@@ -764,6 +775,7 @@ s! {
     }
 }
 
+
 s_no_extra_traits! {
     pub union mount_info {
         pub ufs_args: ufs_args,
@@ -777,28 +789,6 @@ s_no_extra_traits! {
     }
 }
 
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        impl PartialEq for mount_info {
-            fn eq(&self, other: &mount_info) -> bool {
-                unsafe {
-                    self.align
-                        .iter()
-                        .zip(other.align.iter())
-                        .all(|(a, b)| a == b)
-                }
-            }
-        }
-
-        impl Eq for mount_info {}
-
-        impl hash::Hash for mount_info {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe { self.align.hash(state) };
-            }
-        }
-    }
-}
 
 impl siginfo_t {
     pub unsafe fn si_addr(&self) -> *mut c_char {
@@ -819,7 +809,7 @@ impl siginfo_t {
             _si_signo: c_int,
             _si_code: c_int,
             _si_errno: c_int,
-            _pad: Padding<[c_int; SI_PAD]>,
+            _align: [crate::clock_t; 0],
             _pid: crate::pid_t,
         }
         (*(self as *const siginfo_t).cast::<siginfo_timer>())._pid
@@ -831,7 +821,7 @@ impl siginfo_t {
             _si_signo: c_int,
             _si_code: c_int,
             _si_errno: c_int,
-            _pad: Padding<[c_int; SI_PAD]>,
+            _align: [crate::clock_t; 0],
             _pid: crate::pid_t,
             _uid: crate::uid_t,
         }
@@ -844,7 +834,7 @@ impl siginfo_t {
             _si_signo: c_int,
             _si_code: c_int,
             _si_errno: c_int,
-            _pad: Padding<[c_int; SI_PAD]>,
+            _align: [crate::clock_t; 0],
             _pid: crate::pid_t,
             _uid: crate::uid_t,
             value: crate::sigval,
@@ -858,7 +848,7 @@ impl siginfo_t {
             _si_signo: c_int,
             _si_code: c_int,
             _si_errno: c_int,
-            _pad: Padding<[c_int; SI_PAD]>,
+            _align: [crate::clock_t; 0],
             _pid: crate::pid_t,
             _uid: crate::uid_t,
             _utime: crate::clock_t,
@@ -883,43 +873,6 @@ s_no_extra_traits! {
     }
 }
 
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        impl PartialEq for __c_anonymous_ifr_ifru {
-            fn eq(&self, other: &__c_anonymous_ifr_ifru) -> bool {
-                unsafe {
-                    self.ifru_addr == other.ifru_addr
-                        && self.ifru_dstaddr == other.ifru_dstaddr
-                        && self.ifru_broadaddr == other.ifru_broadaddr
-                        && self.ifru_flags == other.ifru_flags
-                        && self.ifru_metric == other.ifru_metric
-                        && self.ifru_vnetid == other.ifru_vnetid
-                        && self.ifru_media == other.ifru_media
-                        && self.ifru_data == other.ifru_data
-                        && self.ifru_index == other.ifru_index
-                }
-            }
-        }
-
-        impl Eq for __c_anonymous_ifr_ifru {}
-
-        impl hash::Hash for __c_anonymous_ifr_ifru {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.ifru_addr.hash(state);
-                    self.ifru_dstaddr.hash(state);
-                    self.ifru_broadaddr.hash(state);
-                    self.ifru_flags.hash(state);
-                    self.ifru_metric.hash(state);
-                    self.ifru_vnetid.hash(state);
-                    self.ifru_media.hash(state);
-                    self.ifru_data.hash(state);
-                    self.ifru_index.hash(state);
-                }
-            }
-        }
-    }
-}
 
 pub const UT_NAMESIZE: usize = 32;
 pub const UT_LINESIZE: usize = 8;

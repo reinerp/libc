@@ -39,11 +39,21 @@ pub const SIOCGIFPHYS: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 53);
 pub const SIOCSIFPHYS: c_ulong = _IOW::<crate::ifreq>('i' as c_ulong, 54);
 pub const SIOCSIFMEDIA: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 55);
 // struct ifmediareq
-pub const SIOCGIFMEDIA: c_ulong = _IOC(IOC_INOUT, 'i' as c_ulong, 56, 44);
+pub const SIOCGIFMEDIA: c_ulong = _IOC(
+    IOC_INOUT,
+    'i' as c_ulong,
+    56,
+    36 + size_of::<usize>() as c_ulong,
+);
 pub const SIOCSIFGENERIC: c_ulong = _IOW::<crate::ifreq>('i' as c_ulong, 57);
 pub const SIOCGIFGENERIC: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 58);
 // struct rslvmulti_req
-pub const SIOCRSLVMULTI: c_ulong = _IOC(IOC_INOUT, 'i' as c_ulong, 59, 16);
+pub const SIOCRSLVMULTI: c_ulong = _IOC(
+    IOC_INOUT,
+    'i' as c_ulong,
+    59,
+    2 * size_of::<usize>() as c_ulong,
+);
 pub const SIOCSIFLLADDR: c_ulong = _IOW::<crate::ifreq>('i' as c_ulong, 60);
 // struct ifstat
 pub const SIOCGIFSTATUS: c_ulong = _IOC(IOC_INOUT, 'i' as c_ulong, 61, 817);
@@ -58,7 +68,12 @@ pub const SIOCGIFALTMTU: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 72);
 pub const SIOCSIFBOND: c_ulong = _IOW::<crate::ifreq>('i' as c_ulong, 70);
 pub const SIOCGIFBOND: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 71);
 // struct ifmediareq
-pub const SIOCGIFXMEDIA: c_ulong = _IOC(IOC_INOUT, 'i' as c_ulong, 72, 44);
+pub const SIOCGIFXMEDIA: c_ulong = _IOC(
+    IOC_INOUT,
+    'i' as c_ulong,
+    72,
+    36 + size_of::<usize>() as c_ulong,
+);
 pub const SIOCSIFCAP: c_ulong = _IOW::<crate::ifreq>('i' as c_ulong, 90);
 pub const SIOCGIFCAP: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 91);
 pub const SIOCSIFMANAGEMENT: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 92);
@@ -66,15 +81,30 @@ pub const SIOCIFCREATE: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 120);
 pub const SIOCIFDESTROY: c_ulong = _IOW::<crate::ifreq>('i' as c_ulong, 121);
 pub const SIOCIFCREATE2: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 122);
 // struct ifdrv
-pub const SIOCSDRVSPEC: c_ulong = _IOC(IOC_IN, 'i' as c_ulong, 123, 40);
+pub const SIOCSDRVSPEC: c_ulong = _IOC(
+    IOC_IN,
+    'i' as c_ulong,
+    123,
+    16 + 3 * size_of::<usize>() as c_ulong,
+);
 // struct ifdrv
-pub const SIOCGDRVSPEC: c_ulong = _IOC(IOC_INOUT, 'i' as c_ulong, 123, 40);
+pub const SIOCGDRVSPEC: c_ulong = _IOC(
+    IOC_INOUT,
+    'i' as c_ulong,
+    123,
+    16 + 3 * size_of::<usize>() as c_ulong,
+);
 pub const SIOCSIFVLAN: c_ulong = _IOW::<crate::ifreq>('i' as c_ulong, 126);
 pub const SIOCGIFVLAN: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 127);
 pub const SIOCSETVLAN: c_ulong = SIOCSIFVLAN;
 pub const SIOCGETVLAN: c_ulong = SIOCGIFVLAN;
 // struct if_clonereq
-pub const SIOCIFGCLONERS: c_ulong = _IOC(IOC_INOUT, 'i' as c_ulong, 129, 16);
+pub const SIOCIFGCLONERS: c_ulong = _IOC(
+    IOC_INOUT,
+    'i' as c_ulong,
+    129,
+    8 + size_of::<usize>() as c_ulong,
+);
 pub const SIOCGIFASYNCMAP: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 124);
 pub const SIOCSIFASYNCMAP: c_ulong = _IOW::<crate::ifreq>('i' as c_ulong, 125);
 pub const SIOCGIFMAC: c_ulong = _IOWR::<crate::ifreq>('i' as c_ulong, 130);

@@ -1,6 +1,11 @@
 //! AArch64-specific definitions for 64-bit linux-like values
 
 use crate::prelude::*;
+
+#[test]
+fn reserved_context_is_aligned() {
+    assert_eq!(core::mem::offset_of!(mcontext_t, __reserved), 288);
+}
 use crate::{
     off64_t,
     off_t,
@@ -217,7 +222,7 @@ s! {
         pub sp: c_ulonglong,
         pub pc: c_ulonglong,
         pub pstate: c_ulonglong,
-        __reserved: Padding<[u64; 512]>,
+        __reserved: Padding<[u128; 256]>,
     }
 
     pub struct user_fpsimd_struct {

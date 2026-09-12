@@ -1,6 +1,14 @@
 //! s390x
 
 use crate::prelude::*;
+
+#[cfg(all(test, feature = "extra_traits"))]
+#[test]
+fn register_equality_is_bitwise() {
+    let nan = fpreg_t { d: f64::NAN };
+    assert!(nan == nan);
+    assert!(fpreg_t { d: 0.0 } != fpreg_t { d: -0.0 });
+}
 use crate::{
     off64_t,
     off_t,
@@ -224,7 +232,7 @@ cfg_if! {
     if #[cfg(feature = "extra_traits")] {
         impl PartialEq for fpreg_t {
             fn eq(&self, other: &fpreg_t) -> bool {
-                self.d == other.d
+                self.d.to_bits() == other.d.to_bits()
             }
         }
 

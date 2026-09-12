@@ -3,6 +3,17 @@ use crate::prelude::*;
 
 pub type wchar_t = u32;
 
+#[test]
+fn signal_context_offsets() {
+    assert_eq!(
+        (
+            core::mem::offset_of!(ucontext_t, uc_mcontext),
+            core::mem::offset_of!(mcontext_t, __reserved)
+        ),
+        (176, 288)
+    );
+}
+
 s! {
     pub struct stat {
         pub st_dev: crate::dev_t,
@@ -62,6 +73,7 @@ s! {
         pub uc_link: *mut ucontext_t,
         pub uc_stack: crate::stack_t,
         pub uc_sigmask: crate::sigset_t,
+        __padding: Padding<[c_char; 120]>,
         pub uc_mcontext: mcontext_t,
     }
 
@@ -72,7 +84,7 @@ s! {
         pub sp: c_ulonglong,
         pub pc: c_ulonglong,
         pub pstate: c_ulonglong,
-        __reserved: Padding<[u64; 512]>,
+        __reserved: Padding<[u128; 256]>,
     }
 
     pub struct user_fpsimd_struct {

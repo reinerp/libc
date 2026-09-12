@@ -310,12 +310,14 @@ s! {
         pub ha: [c_uchar; crate::MAX_ADDR_LEN],
     }
 
-    #[repr(align(4))]
+    #[cfg_attr(target_pointer_width = "32", repr(align(4)))]
+    #[cfg_attr(target_pointer_width = "64", repr(align(8)))]
     pub struct pthread_mutex_t {
         size: [u8; crate::__SIZEOF_PTHREAD_MUTEX_T],
     }
 
-    #[repr(align(4))]
+    #[cfg_attr(target_pointer_width = "32", repr(align(4)))]
+    #[cfg_attr(target_pointer_width = "64", repr(align(8)))]
     pub struct pthread_rwlock_t {
         size: [u8; crate::__SIZEOF_PTHREAD_RWLOCK_T],
     }
@@ -1262,17 +1264,30 @@ pub const PRIO_USER: c_int = 2;
 
 pub const SOMAXCONN: c_int = 128;
 
+fn next_cmsg_addr(cmsg: usize, len: usize, control: usize, controllen: usize) -> Option<usize> {
+    if len < size_of::<cmsghdr>() || cmsg < control {
+        return None;
+    }
+    let mask = size_of::<usize>() - 1;
+    let aligned = len.checked_add(mask)? & !mask;
+    let next = cmsg.checked_add(aligned)?;
+    let end = control.checked_add(controllen)?;
+    if next.checked_add(size_of::<cmsghdr>())? <= end {
+        Some(next)
+    } else {
+        None
+    }
+}
+
 f! {
     pub unsafe fn CMSG_NXTHDR(mhdr: *const msghdr, cmsg: *const cmsghdr) -> *mut cmsghdr {
-        if ((*cmsg).cmsg_len as usize) < size_of::<cmsghdr>() {
-            return ptr::null_mut();
-        }
-        let next = (cmsg as usize + super::CMSG_ALIGN((*cmsg).cmsg_len as usize)) as *mut cmsghdr;
-        let max = (*mhdr).msg_control as usize + (*mhdr).msg_controllen as usize;
-        if (next.offset(1)) as usize >= max {
-            ptr::null_mut()
-        } else {
-            next.cast()
+        // Check integer bounds before constructing a pointer to the next header.
+        match next_cmsg_addr(
+            cmsg as usize, (*cmsg).cmsg_len as usize,
+            (*mhdr).msg_control as usize, (*mhdr).msg_controllen as usize,
+        ) {
+            Some(next) => next as *mut cmsghdr,
+            None => ptr::null_mut(),
         }
     }
 

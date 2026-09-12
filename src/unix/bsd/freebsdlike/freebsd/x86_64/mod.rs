@@ -149,15 +149,9 @@ s_no_extra_traits! {
 
 cfg_if! {
     if #[cfg(feature = "extra_traits")] {
-        // FIXME(msrv): suggested method was added in 1.85
-        #[allow(unpredictable_function_pointer_comparisons)]
         impl PartialEq for __c_anonymous_elf64_auxv_union {
             fn eq(&self, other: &__c_anonymous_elf64_auxv_union) -> bool {
-                unsafe {
-                    self.a_val == other.a_val
-                        || self.a_ptr == other.a_ptr
-                        || self.a_fcn == other.a_fcn
-                }
+                unsafe { self.a_val == other.a_val }
             }
         }
         impl Eq for __c_anonymous_elf64_auxv_union {}

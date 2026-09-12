@@ -49,6 +49,7 @@ s! {
         pub l_start: off_t,
         pub l_len: off_t,
         pub l_pid: crate::pid_t,
+        __reserved: Padding<c_short>,
     }
 
     pub struct flock64 {

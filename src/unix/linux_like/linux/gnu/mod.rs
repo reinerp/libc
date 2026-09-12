@@ -9,6 +9,13 @@ pub type regoff_t = c_int;
 pub type __kernel_rwf_t = c_int;
 pub type __be16 = crate::__u16;
 
+#[test]
+#[allow(deprecated)]
+fn clone3_flags_retain_high_bits() {
+    assert_eq!((CLONE_CLEAR_SIGHAND as u64, CLONE_INTO_CGROUP as u64),
+        (1u64 << 32, 1u64 << 33));
+}
+
 cfg_if! {
     if #[cfg(doc)] {
         // Used in `linux::arch` to define ioctl constants.
@@ -203,16 +210,6 @@ s! {
         pub args: [crate::__u64; 6],
         pub ret_data: crate::__u32,
         reserved2: Padding<crate::__u32>,
-    }
-
-    pub struct ptrace_syscall_info {
-        pub op: crate::__u8,
-        reserved: Padding<crate::__u8>,
-        pub flags: crate::__u16,
-        pub arch: crate::__u32,
-        pub instruction_pointer: crate::__u64,
-        pub stack_pointer: crate::__u64,
-        pub u: __c_anonymous_ptrace_syscall_info_data,
     }
 
     pub struct ptrace_sud_config {
@@ -467,12 +464,13 @@ s_no_extra_traits! {
     }
 
     // Internal, for casts to access union fields
+    #[cfg_attr(all(target_arch = "x86_64", target_pointer_width = "32"), repr(packed(4)))]
     struct sifields_sigchld {
         si_pid: crate::pid_t,
         si_uid: crate::uid_t,
         si_status: c_int,
-        si_utime: c_long,
-        si_stime: c_long,
+        si_utime: crate::clock_t,
+        si_stime: crate::clock_t,
     }
 
     // Internal, for casts to access union fields
@@ -507,46 +505,39 @@ impl siginfo_t {
         self.sifields().sigchld.si_status
     }
 
-    pub unsafe fn si_utime(&self) -> c_long {
+    pub unsafe fn si_utime(&self) -> crate::clock_t {
         self.sifields().sigchld.si_utime
     }
 
-    pub unsafe fn si_stime(&self) -> c_long {
+    pub unsafe fn si_stime(&self) -> crate::clock_t {
         self.sifields().sigchld.si_stime
     }
 }
 
+#[cfg(all(test, target_arch = "x86_64", target_pointer_width = "32"))]
+#[test]
+fn sigchld_clock_layout() {
+    assert_eq!(core::mem::offset_of!(sifields_sigchld, si_utime), 12);
+    assert_eq!(core::mem::offset_of!(sifields_sigchld, si_stime), 20);
+    assert_eq!(core::mem::align_of::<sifields_sigchld>(), 4);
+}
+
 s_no_extra_traits! {
+    pub struct ptrace_syscall_info {
+        pub op: crate::__u8,
+        reserved: Padding<crate::__u8>,
+        pub flags: crate::__u16,
+        pub arch: crate::__u32,
+        pub instruction_pointer: crate::__u64,
+        pub stack_pointer: crate::__u64,
+        pub u: __c_anonymous_ptrace_syscall_info_data,
+    }
+
+    // Only the active variant is initialized; safe equality/hash cannot inspect it.
     pub union __c_anonymous_ptrace_syscall_info_data {
         pub entry: __c_anonymous_ptrace_syscall_info_entry,
         pub exit: __c_anonymous_ptrace_syscall_info_exit,
         pub seccomp: __c_anonymous_ptrace_syscall_info_seccomp,
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        impl PartialEq for __c_anonymous_ptrace_syscall_info_data {
-            fn eq(&self, other: &__c_anonymous_ptrace_syscall_info_data) -> bool {
-                unsafe {
-                    self.entry == other.entry
-                        || self.exit == other.exit
-                        || self.seccomp == other.seccomp
-                }
-            }
-        }
-
-        impl Eq for __c_anonymous_ptrace_syscall_info_data {}
-
-        impl hash::Hash for __c_anonymous_ptrace_syscall_info_data {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.entry.hash(state);
-                    self.exit.hash(state);
-                    self.seccomp.hash(state);
-                }
-            }
-        }
     }
 }
 
@@ -861,19 +852,8 @@ pub const ELFOSABI_ARM_AEABI: u8 = 64;
 
 // linux/sched.h
 pub const CLONE_NEWTIME: c_int = 0x80;
-// DIFF(main): changed to `c_ulonglong` in e9abac9ac2. This is broken so should be fixed.
-#[allow(overflowing_literals)]
-#[deprecated(
-    since = "0.2.188",
-    note = "This constant overflows. In the near future, `libc` will change to a wider type, see #3584."
-)]
-pub const CLONE_CLEAR_SIGHAND: c_int = 0x100000000;
-#[allow(overflowing_literals)]
-#[deprecated(
-    since = "0.2.188",
-    note = "This constant overflows. In the near future, `libc` will change to a wider type, see #3584."
-)]
-pub const CLONE_INTO_CGROUP: c_int = 0x200000000;
+pub const CLONE_CLEAR_SIGHAND: c_ulonglong = 0x100000000;
+pub const CLONE_INTO_CGROUP: c_ulonglong = 0x200000000;
 
 pub const M_MXFAST: c_int = 1;
 pub const M_NLBLKS: c_int = 2;

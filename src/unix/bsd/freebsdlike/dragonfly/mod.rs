@@ -98,7 +98,7 @@ s! {
         pub time_low: u32,
         pub time_mid: u16,
         pub time_hi_and_version: u16,
-        clock_seq_hi_and_reserved: Padding<u8>,
+        clock_seq_hi_and_reserved: u8,
         pub clock_seq_low: u8,
         pub node: [u8; 6],
     }
@@ -1397,11 +1397,11 @@ extern "C" {
         data: *mut c_void,
     ) -> c_int;
 
-    pub fn updwtmpx(file: *const c_char, ut: *const utmpx) -> c_int;
+    pub fn updwtmpx(file: *const c_char, ut: *const utmpx);
     pub fn getlastlogx(fname: *const c_char, uid: crate::uid_t, ll: *mut lastlogx)
         -> *mut lastlogx;
     pub fn updlastlogx(fname: *const c_char, uid: crate::uid_t, ll: *mut lastlogx) -> c_int;
-    pub fn getutxuser(name: *const c_char) -> utmpx;
+    pub fn getutxuser(name: *const c_char) -> *mut utmpx;
     pub fn utmpxname(file: *const c_char) -> c_int;
 
     pub fn sys_checkpoint(tpe: c_int, fd: c_int, pid: crate::pid_t, retval: c_int) -> c_int;

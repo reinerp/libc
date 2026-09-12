@@ -258,16 +258,16 @@ s! {
         pub __si_flags: c_int,
         pub __pad: [c_int; 3],
     }
+}
 
+s_no_extra_traits! {
     pub struct pollfd_ext {
         pub fd: c_int,
         pub events: c_short,
         pub revents: c_short,
         pub data: __pollfd_ext_u,
     }
-}
 
-s_no_extra_traits! {
     pub union _kernel_simple_lock {
         pub _slock: c_long,
         pub _slockp: *mut lock_data_instrumented,
@@ -371,29 +371,9 @@ impl siginfo_t {
 
 cfg_if! {
     if #[cfg(feature = "extra_traits")] {
-        impl PartialEq for __pollfd_ext_u {
-            fn eq(&self, other: &__pollfd_ext_u) -> bool {
-                unsafe {
-                    self.addr == other.addr
-                        && self.data32 == other.data32
-                        && self.data == other.data
-                }
-            }
-        }
-        impl Eq for __pollfd_ext_u {}
-        impl hash::Hash for __pollfd_ext_u {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.addr.hash(state);
-                    self.data.hash(state);
-                    self.data32.hash(state);
-                }
-            }
-        }
-
         impl PartialEq for fpreg_t {
             fn eq(&self, other: &fpreg_t) -> bool {
-                self.d == other.d
+                self.d.to_bits() == other.d.to_bits()
             }
         }
         impl Eq for fpreg_t {}

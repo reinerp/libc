@@ -12,39 +12,38 @@ pub type wchar_t = i32;
 
 s! {
     pub struct stat {
-        pub st_dev: c_ulong,
-        st_pad1: Padding<[c_long; 2]>,
+        pub st_dev: c_uint,
+        st_pad1: Padding<[c_int; 3]>,
         pub st_ino: crate::ino_t,
         pub st_mode: crate::mode_t,
         pub st_nlink: crate::nlink_t,
         pub st_uid: crate::uid_t,
         pub st_gid: crate::gid_t,
-        pub st_rdev: c_ulong,
-        st_pad2: Padding<[c_ulong; 1]>,
+        pub st_rdev: c_uint,
+        st_pad2: Padding<[c_int; 3]>,
         pub st_size: off_t,
-        st_pad3: Padding<c_long>,
         pub st_atime: crate::time_t,
         pub st_atime_nsec: c_long,
         pub st_mtime: crate::time_t,
         pub st_mtime_nsec: c_long,
         pub st_ctime: crate::time_t,
         pub st_ctime_nsec: c_long,
-        pub st_blksize: crate::blksize_t,
-        st_pad4: Padding<c_long>,
+        pub st_blksize: c_int,
+        st_pad4: Padding<c_int>,
         pub st_blocks: crate::blkcnt_t,
-        st_pad5: Padding<[c_long; 7]>,
+        st_pad5: Padding<[c_int; 14]>,
     }
 
     pub struct stat64 {
-        pub st_dev: c_ulong,
-        st_pad1: Padding<[c_long; 2]>,
+        pub st_dev: c_uint,
+        st_pad1: Padding<[c_int; 3]>,
         pub st_ino: crate::ino64_t,
         pub st_mode: crate::mode_t,
         pub st_nlink: crate::nlink_t,
         pub st_uid: crate::uid_t,
         pub st_gid: crate::gid_t,
-        pub st_rdev: c_ulong,
-        st_pad2: Padding<[c_long; 2]>,
+        pub st_rdev: c_uint,
+        st_pad2: Padding<[c_int; 3]>,
         pub st_size: off64_t,
         pub st_atime: crate::time_t,
         pub st_atime_nsec: c_long,
@@ -52,10 +51,10 @@ s! {
         pub st_mtime_nsec: c_long,
         pub st_ctime: crate::time_t,
         pub st_ctime_nsec: c_long,
-        pub st_blksize: crate::blksize_t,
-        st_pad3: Padding<c_long>,
+        pub st_blksize: c_int,
+        st_pad3: Padding<c_int>,
         pub st_blocks: crate::blkcnt64_t,
-        st_pad5: Padding<[c_long; 7]>,
+        st_pad5: Padding<[c_int; 14]>,
     }
 
     pub struct pthread_attr_t {
@@ -76,7 +75,7 @@ s! {
     }
 
     pub struct sigset_t {
-        __size: [c_ulong; 16],
+        __size: [c_ulong; 2],
     }
 
     pub struct siginfo_t {

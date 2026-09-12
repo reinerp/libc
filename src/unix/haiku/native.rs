@@ -398,9 +398,8 @@ s! {
         pub image_type: c_int,
         pub sequence: i32,
         pub init_order: i32,
-        // FIXME(1.0): these should be made optional
-        pub init_routine: extern "C" fn(),
-        pub term_routine: extern "C" fn(),
+        pub init_routine: Option<extern "C" fn()>,
+        pub term_routine: Option<extern "C" fn()>,
         pub device: crate::dev_t,
         pub node: crate::ino_t,
         pub name: [c_char; crate::PATH_MAX as usize],
@@ -418,18 +417,12 @@ s! {
     }
 
     pub struct __c_anonymous_eax_1 {
-        pub stepping: u32,
-        pub model: u32,
-        pub family: u32,
-        pub tpe: u32,
-        __reserved_0: Padding<u32>,
-        pub extended_model: u32,
-        pub extended_family: u32,
-        __reserved_1: Padding<u32>,
-        pub brand_index: u32,
-        pub clflush: u32,
-        pub logical_cpus: u32,
-        pub apic_id: u32,
+        /// Packed stepping (0..4), model (4..8), family (8..12), type (12..14),
+        /// extended model (16..20), and extended family (20..28) bitfields.
+        pub version: u32,
+        /// Packed brand index, CLFLUSH size, logical CPU count, and APIC ID,
+        /// in successive eight-bit fields starting at bit zero.
+        pub identification: u32,
         pub features: u32,
         pub extended_features: u32,
     }
@@ -451,16 +444,16 @@ s! {
         pub edx: u32,
         pub ecx: u32,
     }
+}
 
+s_no_extra_traits! {
     pub struct cpu_topology_node_info {
         pub id: u32,
         pub type_: topology_level_type,
         pub level: u32,
         pub data: __c_anonymous_cpu_topology_info_data,
     }
-}
 
-s_no_extra_traits! {
     pub union cpuid_info {
         pub eax_0: __c_anonymous_eax_0,
         pub eax_1: __c_anonymous_eax_1,
@@ -474,45 +467,6 @@ s_no_extra_traits! {
         pub root: cpu_topology_root_info,
         pub package: cpu_topology_package_info,
         pub core: cpu_topology_core_info,
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        impl PartialEq for cpuid_info {
-            fn eq(&self, other: &cpuid_info) -> bool {
-                unsafe {
-                    self.eax_0 == other.eax_0
-                        || self.eax_1 == other.eax_1
-                        || self.eax_2 == other.eax_2
-                        || self.eax_3 == other.eax_3
-                        || self.as_chars == other.as_chars
-                        || self.regs == other.regs
-                }
-            }
-        }
-        impl Eq for cpuid_info {}
-        impl hash::Hash for cpuid_info {
-            fn hash<H: hash::Hasher>(&self, _state: &mut H) {
-                unimplemented!("traits");
-            }
-        }
-
-        impl PartialEq for __c_anonymous_cpu_topology_info_data {
-            fn eq(&self, other: &__c_anonymous_cpu_topology_info_data) -> bool {
-                unsafe {
-                    self.root == other.root
-                        || self.package == other.package
-                        || self.core == other.core
-                }
-            }
-        }
-        impl Eq for __c_anonymous_cpu_topology_info_data {}
-        impl hash::Hash for __c_anonymous_cpu_topology_info_data {
-            fn hash<H: hash::Hasher>(&self, _state: &mut H) {
-                unimplemented!("traits");
-            }
-        }
     }
 }
 

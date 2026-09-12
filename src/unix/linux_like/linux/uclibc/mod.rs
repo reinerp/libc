@@ -1,3 +1,6 @@
+//! Native ABI baseline: uClibc-ng 1.0.45 (time32) and 1.0.54 (time64), as used
+//! by this crate's CI. Match the native library configuration when selecting
+//! `libc_unstable_uclibc_time64`: later releases changed IPC record layouts.
 // FIXME(ulibc): this module has definitions that are redundant with the parent
 #![allow(dead_code)]
 
@@ -13,7 +16,7 @@ pub type __rlimit_resource_t = c_ulong;
 pub type __priority_which_t = c_uint;
 
 cfg_if! {
-    // Set `--cfg=libc_unstable_uclibc_time64` in RUSTFLAGS if your uClibc has 64-bit `time_t`.
+    // Set `--cfg=libc_unstable_uclibc_time64` for the uClibc-ng 1.0.54 time64 ABI.
     if #[cfg(linux_time_bits64)] {
         pub type time_t = i64;
         pub type suseconds_t = i64;
@@ -44,12 +47,9 @@ s! {
         pub f_files: crate::fsfilcnt_t,
         pub f_ffree: crate::fsfilcnt_t,
         pub f_favail: crate::fsfilcnt_t,
-        #[cfg(target_endian = "little")]
         pub f_fsid: c_ulong,
         #[cfg(target_pointer_width = "32")]
         __f_unused: Padding<c_int>,
-        #[cfg(target_endian = "big")]
-        pub f_fsid: c_ulong,
         pub f_flag: c_ulong,
         pub f_namemax: c_ulong,
         __f_spare: [c_int; 6],

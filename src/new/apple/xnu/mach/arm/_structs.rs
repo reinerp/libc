@@ -6,6 +6,25 @@
 use crate::prelude::*;
 
 s! {
+    pub struct __darwin_arm_exception_state {
+        pub __exception: u32,
+        pub __fsr: u32,
+        pub __far: u32,
+    }
+
+    pub struct __darwin_arm_thread_state {
+        pub __r: [u32; 13],
+        pub __sp: u32,
+        pub __lr: u32,
+        pub __pc: u32,
+        pub __cpsr: u32,
+    }
+
+    pub struct __darwin_arm_vfp_state {
+        pub __r: [u32; 64],
+        pub __fpscr: u32,
+    }
+
     pub struct __darwin_arm_exception_state64 {
         pub __far: u64,
         pub __esr: u32,

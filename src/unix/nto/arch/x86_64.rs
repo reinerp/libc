@@ -38,12 +38,6 @@ s! {
         rsvd2: Padding<u32>,
     }
 
-    #[repr(align(8))]
-    pub struct mcontext_t {
-        pub cpu: x86_64_cpu_registers,
-        pub fpu: x86_64_fpu_registers,
-    }
-
     pub struct stack_t {
         pub ss_sp: *mut c_void,
         pub ss_size: size_t,
@@ -84,36 +78,17 @@ s! {
 }
 
 s_no_extra_traits! {
+    #[repr(align(8))]
+    pub struct mcontext_t {
+        pub cpu: x86_64_cpu_registers,
+        pub fpu: x86_64_fpu_registers,
+    }
+
+    // No active-member tag: safe traits cannot read the longer alternatives.
     pub union x86_64_fpu_registers {
         pub fsave_area: fsave_area_64,
         pub fxsave_area: fxsave_area_64,
         pub xsave_area: fpu_extention_savearea_64,
         pub data: [u8; 1024],
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        impl Eq for x86_64_fpu_registers {}
-
-        impl PartialEq for x86_64_fpu_registers {
-            fn eq(&self, other: &x86_64_fpu_registers) -> bool {
-                unsafe {
-                    self.fsave_area == other.fsave_area
-                        || self.fxsave_area == other.fxsave_area
-                        || self.xsave_area == other.xsave_area
-                }
-            }
-        }
-
-        impl hash::Hash for x86_64_fpu_registers {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.fsave_area.hash(state);
-                    self.fxsave_area.hash(state);
-                    self.xsave_area.hash(state);
-                }
-            }
-        }
     }
 }

@@ -7,6 +7,7 @@ use crate::{
 };
 
 pub type wchar_t = c_int;
+pub type stat = stat64;
 
 s! {
     pub struct msqid_ds {
@@ -42,6 +43,7 @@ s! {
         pub st_mtime_nsec: c_long,
         pub st_ctime: crate::time_t,
         pub st_ctime_nsec: c_long,
+        __ctime_pad: Padding<c_int>,
         __unused: Padding<[c_int; 2]>,
     }
 
@@ -85,6 +87,7 @@ s! {
         pub f_ffree: crate::fsfilcnt64_t,
         pub f_favail: crate::fsfilcnt64_t,
         pub f_fsid: c_ulong,
+        __f_unused: Padding<c_int>,
         pub f_flag: c_ulong,
         pub f_namemax: c_ulong,
         pub __f_spare: [c_int; 6],
@@ -126,8 +129,7 @@ s! {
         pub gid: crate::gid_t,
         pub cuid: crate::uid_t,
         pub cgid: crate::gid_t,
-        pub mode: c_ushort,
-        __pad1: Padding<c_ushort>,
+        pub mode: crate::mode_t,
         pub __seq: c_ushort,
         __pad2: Padding<c_ushort>,
         __unused1: Padding<c_ulong>,
@@ -492,9 +494,9 @@ pub const IEXTEN: crate::tcflag_t = 32768;
 pub const TOSTOP: crate::tcflag_t = 256;
 pub const FLUSHO: crate::tcflag_t = 4096;
 pub const EXTPROC: crate::tcflag_t = 65536;
-pub const __SIZEOF_PTHREAD_MUTEX_T: usize = 40;
-pub const __SIZEOF_PTHREAD_RWLOCK_T: usize = 56;
-pub const __SIZEOF_PTHREAD_BARRIER_T: usize = 32;
+pub const __SIZEOF_PTHREAD_MUTEX_T: usize = 32;
+pub const __SIZEOF_PTHREAD_RWLOCK_T: usize = 48;
+pub const __SIZEOF_PTHREAD_BARRIER_T: usize = 20;
 pub const NGREG: usize = 32;
 pub const REG_PC: usize = 0;
 pub const REG_RA: usize = 1;

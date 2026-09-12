@@ -17,7 +17,7 @@ s! {
     }
 
     pub struct fpregs {
-        pub fp_q: u128,
+        pub fp_q: [u128; 32],
         pub fp_sr: u32,
         pub fp_cr: u32,
         pub fp_flags: c_int,

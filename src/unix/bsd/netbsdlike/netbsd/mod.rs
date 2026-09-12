@@ -658,11 +658,17 @@ s! {
         pub sa_sigmask: sigset_t,
     }
 
+}
+
+s_no_extra_traits! {
     pub struct posix_spawn_file_actions_entry_t {
         pub fae_action: fae_action,
         pub fae_fildes: c_int,
         pub fae_data: __c_anonymous_posix_spawn_fae,
     }
+}
+
+s! {
 
     pub struct posix_spawn_file_actions_t {
         pub size: c_uint,
@@ -805,24 +811,6 @@ s_no_extra_traits! {
     }
 }
 
-cfg_if! {
-    if #[cfg(feature = "extra_traits")] {
-        impl Eq for __c_anonymous_posix_spawn_fae {}
-        impl PartialEq for __c_anonymous_posix_spawn_fae {
-            fn eq(&self, other: &__c_anonymous_posix_spawn_fae) -> bool {
-                unsafe { self.open == other.open || self.dup2 == other.dup2 }
-            }
-        }
-        impl hash::Hash for __c_anonymous_posix_spawn_fae {
-            fn hash<H: hash::Hasher>(&self, state: &mut H) {
-                unsafe {
-                    self.open.hash(state);
-                    self.dup2.hash(state);
-                }
-            }
-        }
-    }
-}
 
 pub const AT_FDCWD: c_int = -100;
 pub const AT_EACCESS: c_int = 0x100;
@@ -1882,7 +1870,7 @@ safe_f! {
         let major = major as crate::dev_t;
         let minor = minor as crate::dev_t;
         let mut dev = 0;
-        dev |= (major << 8) & 0x000ff00;
+        dev |= (major << 8) & 0x000fff00;
         dev |= (minor << 12) & 0xfff00000;
         dev |= minor & 0xff;
         dev
@@ -2315,7 +2303,7 @@ extern "C" {
         result: *mut *mut crate::group,
     ) -> c_int;
 
-    pub fn efopen(p: *const c_char, m: *const c_char) -> crate::FILE;
+    pub fn efopen(p: *const c_char, m: *const c_char) -> *mut crate::FILE;
     pub fn emalloc(n: size_t) -> *mut c_void;
     pub fn ecalloc(n: size_t, c: size_t) -> *mut c_void;
     pub fn erealloc(p: *mut c_void, n: size_t) -> *mut c_void;
@@ -2337,7 +2325,7 @@ extern "C" {
         hi: crate::uintmax_t,
     ) -> crate::uintmax_t;
     pub fn easprintf(string: *mut *mut c_char, fmt: *const c_char, ...) -> c_int;
-    pub fn evasprintf(string: *mut *mut c_char, fmt: *const c_char, ...) -> c_int;
+    // evasprintf takes a va_list, which has no portable stable Rust representation.
     pub fn esetfunc(
         cb: Option<unsafe extern "C" fn(c_int, *const c_char, ...)>,
     ) -> Option<unsafe extern "C" fn(c_int, *const c_char, ...)>;
@@ -2379,8 +2367,8 @@ extern "C" {
     pub fn login(ut: *const crate::utmp);
     #[link_name = "__loginx50"]
     pub fn loginx(ut: *const crate::utmpx);
-    pub fn logout(line: *const c_char);
-    pub fn logoutx(line: *const c_char, status: c_int, tpe: c_int);
+    pub fn logout(line: *const c_char) -> c_int;
+    pub fn logoutx(line: *const c_char, status: c_int, tpe: c_int) -> c_int;
     pub fn logwtmp(line: *const c_char, name: *const c_char, host: *const c_char);
     pub fn logwtmpx(
         line: *const c_char,
@@ -2413,12 +2401,14 @@ extern "C" {
         name: *const c_char,
         value: *const c_void,
         size: size_t,
+        flags: c_int,
     ) -> c_int;
     pub fn lsetxattr(
         path: *const c_char,
         name: *const c_char,
         value: *const c_void,
         size: size_t,
+        flags: c_int,
     ) -> c_int;
     pub fn fsetxattr(
         filedes: c_int,
@@ -2432,14 +2422,14 @@ extern "C" {
     pub fn flistxattr(filedes: c_int, list: *mut c_char, size: size_t) -> ssize_t;
     pub fn removexattr(path: *const c_char, name: *const c_char) -> c_int;
     pub fn lremovexattr(path: *const c_char, name: *const c_char) -> c_int;
-    pub fn fremovexattr(fd: c_int, path: *const c_char, name: *const c_char) -> c_int;
+    pub fn fremovexattr(fd: c_int, name: *const c_char) -> c_int;
 
     pub fn string_to_flags(
         string_p: *mut *mut c_char,
         setp: *mut c_ulong,
         clrp: *mut c_ulong,
     ) -> c_int;
-    pub fn flags_to_string(flags: c_ulong, def: *const c_char) -> c_int;
+    pub fn flags_to_string(flags: c_ulong, def: *const c_char) -> *mut c_char;
 
     pub fn kinfo_getvmmap(pid: crate::pid_t, cntp: *mut size_t) -> *mut kinfo_vmentry;
 }
